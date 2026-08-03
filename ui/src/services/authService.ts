@@ -1,0 +1,1 @@
+//authService.ts: Chứa tất cả các hàm gọi API liên quan đến việc xác thực danh tính. Ví dụ: login (đăng nhập), register (đăng ký), logout (đăng xuất), verifyToken (kiểm tra token còn hạn không).

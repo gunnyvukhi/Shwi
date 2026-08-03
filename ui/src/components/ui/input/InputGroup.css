@@ -1,0 +1,31 @@
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.text-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  font-size: 0.95rem;
+}
+
+.text-input:focus {
+  border-color: #38bdf8;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+}
