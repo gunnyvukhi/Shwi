@@ -2,7 +2,7 @@ import React from 'react';
 import './LeftLoginBox.css'
 import theme from '../../../config/theme';
 import {Zap} from "lucide-react";
-import ShuviIcon from '../icon/ShuviIcon';
+import ShwiIcon from '../icon/ShwiIcon';
 import Title from '../Text/Title';
 import Description from '../Text/Description';
 import StatsBox from './StatsBox';
@@ -22,7 +22,7 @@ const LeftLoginBox: React.FC<LeftLoginBoxProps> = () => {
         {/* Content */}
         <div className="left-panel-content">
           {/* Logo */}
-          <ShuviIcon size={22}/>
+          <ShwiIcon size={22}/>
 
           {/* Quote */}
           <div>

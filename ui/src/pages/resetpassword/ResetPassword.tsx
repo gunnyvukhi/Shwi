@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 import theme from "../../config/theme";
 import LeftLoginBox from "../../components/ui/box/LeftLoginBox";
-import ShuviIcon from "../../components/ui/icon/ShuviIcon";
+import ShwiIcon from "../../components/ui/icon/ShwiIcon";
 import Title from "../../components/ui/Text/Title";
 import Description from "../../components/ui/Text/Description";
 import InputGroup from "../../components/ui/input/InputGroup";
@@ -81,7 +81,7 @@ export default function ResetPassword() {
     <div className="login-wrapper" style={{backgroundColor: theme.colors.background}}>
       <LeftLoginBox/>
       <div className="right-panel">
-        <ShuviIcon size={22} mobile/>
+        <ShwiIcon size={22} mobile/>
 
         <div className="form-wrapper">
           <div className="form-header">

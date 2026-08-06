@@ -113,7 +113,7 @@ def verify_email_otp():
 
     token = generate_jwt_token(user.id)
     return jsonify({
-        'message': 'Email verified successfully! Welcome to Shuvi Gym.',
+        'message': 'Email verified successfully! Welcome to Shwi Gym.',
         'token': token,
         'user': user.to_dict()
     }), 200

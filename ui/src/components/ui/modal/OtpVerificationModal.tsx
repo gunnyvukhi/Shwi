@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mail, Lock, X, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, X } from 'lucide-react';
 import { authService } from '../../../services/authService';
 import { useAuthStore } from '../../../store/useAuthStore';
 import './OtpVerificationModal.css';
@@ -208,8 +208,8 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               {loading
                 ? 'Verifying...'
                 : purpose === 'email_verification'
-                ? 'Verify & Start Training'
-                : 'Continue to Password'}
+                  ? 'Verify & Start Training'
+                  : 'Continue to Password'}
             </button>
 
             <div className="otp-resend-row">

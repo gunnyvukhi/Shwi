@@ -15,7 +15,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
   id = 'email',
   label = 'Email address',
   type = 'email',
-  placeholder = 'you@shuvi.app',
+  placeholder = 'you@shwi.app',
   value,
   onChange,
 }) => (

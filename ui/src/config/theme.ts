@@ -1,4 +1,7 @@
+import type { CSSProperties } from 'react';
+
 export const theme = {
+	// Base Brand Colors (Used across Login, Register, Forgot/Reset Password)
 	colors: {
 		primary: '#38bdf8',
 		secondary: '#262626',
@@ -12,8 +15,83 @@ export const theme = {
 		title: '#f5f5f5',
 		inputbg: '#262626'
 	},
+
+	// Accent & Status Palette for Charts, Icons, Markers
+	accents: {
+		rose: '#f43f5e',
+		roseBg: 'rgba(244, 63, 94, 0.12)',
+		indigo: '#818cf8',
+		indigoBg: 'rgba(129, 140, 248, 0.12)',
+		sky: '#38bdf8',
+		skyBg: 'rgba(56, 189, 248, 0.12)',
+		orange: '#f97316',
+		orangeBg: 'rgba(249, 115, 22, 0.12)',
+		emerald: '#10b981',
+		emeraldBg: 'rgba(16, 185, 129, 0.12)',
+		amber: '#f59e0b',
+		amberBg: 'rgba(245, 158, 11, 0.12)'
+	},
+
+	// Dashboard & App Dark Mode Theme
+	dark: {
+		bgMain: '#09090b',
+		bgCard: 'rgba(24, 24, 27, 0.6)',
+		bgCardSolid: '#18181b',
+		textMain: '#fafafa',
+		textMuted: '#a1a1aa',
+		borderColor: '#27272a',
+		primary: '#38bdf8',
+		primaryHover: '#7dd3fc',
+		navBg: 'rgba(9, 9, 11, 0.85)',
+		gridLine: '#27272a',
+		chartText: '#71717a',
+		svgStroke: '#27272a',
+		danger: '#f87171',
+		cardShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)'
+	},
+
+	// Dashboard & App Light Mode Theme
+	light: {
+		bgMain: '#e2e8f0',
+		bgCard: 'rgba(255, 255, 255, 0.96)',
+		bgCardSolid: '#ffffff',
+		textMain: '#0f172a',
+		textMuted: '#475569',
+		borderColor: '#cbd5e1',
+		primary: '#0284c7',
+		primaryHover: '#0369a1',
+		navBg: 'rgba(241, 245, 249, 0.92)',
+		gridLine: '#cbd5e1',
+		chartText: '#64748b',
+		svgStroke: '#94a3b8',
+		danger: '#dc2626',
+		cardShadow: '0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04)'
+	}
 } as const;
 
+export function getThemeStyles(isDark: boolean): CSSProperties {
+	const currentTheme = isDark ? theme.dark : theme.light;
+	return {
+		'--bg-main': currentTheme.bgMain,
+		'--bg-card': currentTheme.bgCard,
+		'--bg-card-solid': currentTheme.bgCardSolid,
+		'--text-main': currentTheme.textMain,
+		'--text-muted': currentTheme.textMuted,
+		'--border-color': currentTheme.borderColor,
+		'--primary': currentTheme.primary,
+		'--primary-hover': currentTheme.primaryHover,
+		'--nav-bg': currentTheme.navBg,
+		'--grid-line': currentTheme.gridLine,
+		'--chart-text': currentTheme.chartText,
+		'--svg-stroke': currentTheme.svgStroke,
+		'--danger': currentTheme.danger,
+		'--card-shadow': currentTheme.cardShadow
+	} as CSSProperties;
+}
+
 export type Theme = typeof theme;
+export type ColorPalette = typeof theme.colors;
+export type AccentPalette = typeof theme.accents;
+export type ThemeMode = 'dark' | 'light';
 
 export default theme;

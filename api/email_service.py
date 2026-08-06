@@ -22,11 +22,11 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = 'email_verificat
     Fallback to console logging if SMTP fails or is not configured.
     """
     subject_title = "Verify Your Email Address" if purpose == 'email_verification' else "Password Reset OTP Code"
-    header_title = "Welcome to Shuvi Gym!" if purpose == 'email_verification' else "Password Reset Request"
+    header_title = "Welcome to Shwi Gym!" if purpose == 'email_verification' else "Password Reset Request"
     body_intro = (
-        "Thank you for registering with Shuvi Gym. Please use the following 6-digit OTP code to complete your email verification."
+        "Thank you for registering with Shwi Gym. Please use the following 6-digit OTP code to complete your email verification."
         if purpose == 'email_verification'
-        else "We received a request to reset your Shuvi Gym account password. Use the following 6-digit OTP code to set a new password."
+        else "We received a request to reset your Shwi Gym account password. Use the following 6-digit OTP code to set a new password."
     )
 
     html_content = f"""
@@ -49,14 +49,14 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = 'email_verificat
     <body>
       <div class="container">
         <div class="badge">Security Code</div>
-        <div class="logo">⚡ SHUVI GYM</div>
+        <div class="logo">⚡ SHWI GYM</div>
         <div class="title">{header_title}</div>
         <div class="text">{body_intro} This code is valid for <strong style="color: #ffffff;">10 minutes</strong>.</div>
         <div class="otp-box">
           <div class="otp-code">{otp_code}</div>
         </div>
         <div class="text" style="font-size: 13px;">If you did not request this, please ignore this email or contact support.</div>
-        <div class="footer">&copy; 2026 Shuvi Gym. All rights reserved.</div>
+        <div class="footer">&copy; 2026 Shwi Gym. All rights reserved.</div>
       </div>
     </body>
     </html>
@@ -73,8 +73,8 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = 'email_verificat
 
     try:
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"[{otp_code}] {subject_title} - Shuvi Gym"
-        msg["From"] = f"Shuvi Gym <{EMAIL_USER}>"
+        msg["Subject"] = f"[{otp_code}] {subject_title} - Shwi Gym"
+        msg["From"] = f"Shwi Gym <{EMAIL_USER}>"
         msg["To"] = to_email
 
         msg.attach(MIMEText(html_content, "html"))

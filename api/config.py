@@ -13,7 +13,7 @@ class Config:
     MYSQL_PORT = int(os.getenv('MYSQL_PORT', 3306))
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-    MYSQL_DB = os.getenv('MYSQL_DB', 'shuvi_db')
+    MYSQL_DB = os.getenv('MYSQL_DB', 'shwi_db')
     
     # Construct PyMySQL URI safely with URL-encoded credentials
     encoded_user = quote_plus(MYSQL_USER)

@@ -111,7 +111,7 @@ export default function Login() {
           </form>
 
           <p className="footer-text">
-            New to Shuvi?{" "}
+            New to Shwi?{" "}
             <Link to={PATHS.REGISTER} className="footer-link">
               Create your free account
             </Link>

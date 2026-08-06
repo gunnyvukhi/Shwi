@@ -1,0 +1,220 @@
+/* Header Component Layout Styles */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--nav-bg);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+.header-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    height: 4rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+}
+
+.header-logo-wrap {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.header-logo-wrap .logo-text {
+    color: var(--text-main);
+    font-size: 1.35rem;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: var(--bg-card-solid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+}
+
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.desktop-nav {
+    display: none;
+    align-items: center;
+    gap: 2.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+@media (min-width: 768px) {
+    .desktop-nav {
+        display: flex;
+    }
+}
+
+.desktop-nav a {
+    text-decoration: none;
+    color: inherit;
+    font-size: 1.1rem;
+    transition: color 0.2s ease, transform 0.15s ease;
+    padding: 0.25rem 0;
+}
+
+.desktop-nav a:hover,
+.desktop-nav a.active {
+    color: var(--text-main);
+}
+
+.desktop-nav a.active-primary {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem;
+    border-radius: 0.5rem;
+}
+
+.icon-btn:hover {
+    color: var(--text-main);
+    background-color: var(--bg-card);
+    transform: translateY(-1px);
+}
+
+.avatar-btn {
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-card-solid);
+    padding: 0;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.avatar-btn:hover {
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.avatar-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* User Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    width: 13rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card-solid);
+    padding: 0.5rem;
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown-header {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.dropdown-header p {
+    margin: 0;
+}
+
+.dropdown-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.35rem 0;
+}
+
+.dropdown-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-main);
+}
+
+.dropdown-item.danger {
+    color: var(--danger);
+}
+
+.dropdown-item.danger:hover {
+    background-color: rgba(248, 113, 113, 0.1);
+}
