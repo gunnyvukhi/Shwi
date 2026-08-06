@@ -1,0 +1,212 @@
+.otp-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(5, 8, 15, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.otp-card {
+  background: #171717;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 18px;
+  width: 90%;
+  max-width: 440px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.1);
+  position: relative;
+  text-align: center;
+}
+
+.otp-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.otp-close-btn:hover {
+  color: #ffffff;
+}
+
+.otp-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.otp-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.otp-subtitle {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0 0 1.75rem 0;
+  line-height: 1.5;
+}
+
+.otp-email-highlight {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.otp-digit-input {
+  width: 48px;
+  height: 56px;
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: monospace;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.otp-digit-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  background-color: #1e293b;
+}
+
+.otp-password-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.otp-input-label {
+  font-size: 0.85rem;
+  color: #a3a3a3;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.otp-password-input {
+  width: 100%;
+  height: 48px;
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0 1rem;
+  font-size: 0.95rem;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.otp-password-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+
+.otp-error-msg {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.otp-success-msg {
+  background-color: rgba(56, 189, 248, 0.1);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.otp-submit-btn {
+  width: 100%;
+  height: 48px;
+  background-color: #38bdf8;
+  color: #0d0d0d;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.otp-submit-btn:hover:not(:disabled) {
+  background-color: #0284c7;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.otp-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.otp-resend-row {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.3rem;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.otp-resend-btn:disabled {
+  color: #64748b;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}

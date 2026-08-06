@@ -5,7 +5,7 @@
 
 #nav-toggle:checked~#nav-content,
 #nav-toggle:checked~#nav-footer {
-    width: var(80px);
+    width: 80px;
 }
 
 #nav-toggle:checked~#nav-header #nav-title {

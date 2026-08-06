@@ -20,6 +20,7 @@
   .right-panel {
     padding: 3rem;
   }
+
   .login-wrapper {
     overflow: hidden;
   }
@@ -68,7 +69,7 @@
 
 .footer-text {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
   color: #a3a3a3;
   font-size: 0.88rem;
 }

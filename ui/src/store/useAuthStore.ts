@@ -1,36 +1,101 @@
-// src/store/useAuthStore.ts
 import { create } from 'zustand';
+import { authService } from '../services/authService';
+import type { User } from '../services/authService';
 
-// 1. Định nghĩa kiểu dữ liệu cho User (tùy thuộc vào backend của bạn)
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'user';
-}
-
-// 2. Định nghĩa kiểu dữ liệu cho toàn bộ Kho (State + Actions)
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  login: (userData: User) => void;
+  isInitializing: boolean;
+  setAuth: (user: User, token: string) => void;
+  login: (user: User, token?: string) => void;
   logout: () => void;
+  checkAuth: () => Promise<void>;
 }
 
-// 3. Khởi tạo Zustand Store với kiểu AuthState
-export const useAuthStore = create<AuthState>((set) => ({
-  // Trạng thái ban đầu (State)
-  user: null,
-  isAuthenticated: false,
+const getInitialUser = (): User | null => {
+  const savedUser = localStorage.getItem('gym_auth_user');
+  if (savedUser) {
+    try {
+      return JSON.parse(savedUser);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
 
-  // Hàm xử lý hành động (Actions)
-  login: (userData) => set({ 
-    user: userData, 
-    isAuthenticated: true 
-  }),
-  
-  logout: () => set({ 
-    user: null, 
-    isAuthenticated: false 
-  }),
+const savedToken = localStorage.getItem('gym_auth_token');
+const initialUser = getInitialUser();
+const hasSavedSession = Boolean(savedToken);
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: initialUser,
+  token: savedToken,
+  isAuthenticated: hasSavedSession,
+  isInitializing: hasSavedSession,
+
+  setAuth: (user, token) => {
+    localStorage.setItem('gym_auth_token', token);
+    localStorage.setItem('gym_auth_user', JSON.stringify(user));
+    set({ user, token, isAuthenticated: true, isInitializing: false });
+  },
+
+  login: (userData, token) => {
+    const activeToken = token || get().token;
+    if (activeToken) {
+      localStorage.setItem('gym_auth_token', activeToken);
+    }
+    localStorage.setItem('gym_auth_user', JSON.stringify(userData));
+    set({
+      user: userData,
+      token: activeToken,
+      isAuthenticated: true,
+      isInitializing: false,
+    });
+  },
+
+  logout: () => {
+    localStorage.removeItem('gym_auth_token');
+    localStorage.removeItem('gym_auth_user');
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isInitializing: false,
+    });
+  },
+
+  checkAuth: async () => {
+    const token = localStorage.getItem('gym_auth_token');
+    if (!token) {
+      set({ isInitializing: false, isAuthenticated: false, user: null, token: null });
+      return;
+    }
+
+    try {
+      const user = await authService.getMe(token);
+      localStorage.setItem('gym_auth_user', JSON.stringify(user));
+      set({
+        user,
+        token,
+        isAuthenticated: true,
+        isInitializing: false,
+      });
+    } catch (err: any) {
+      if (err.status === 401) {
+        localStorage.removeItem('gym_auth_token');
+        localStorage.removeItem('gym_auth_user');
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isInitializing: false,
+        });
+      } else {
+        // Network error, server temporary down, etc. -> Keep saved session active!
+        set({ isInitializing: false });
+      }
+    }
+  },
 }));

@@ -2,17 +2,17 @@ import { createBrowserRouter } from 'react-router-dom';
 import { PATHS } from './paths';
 
 import { ProtectedRoute } from './ProtectedRoute';
-import { PublicRoute } from './PublicRoute'; // 1. Import PublicRoute
+import { PublicRoute } from './PublicRoute';
 
 import Home from '../pages/home/Home';
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashbroad/Dashbroad';
 import ForgotPassword from '../pages/forgotpassword/ForgotPassword';
+import ResetPassword from '../pages/resetpassword/ResetPassword';
 import Register from '../pages/register/Register';
 
 export const router = createBrowserRouter([
   // Nhóm 1: Các trang ai cũng vào được (Landing page, Giới thiệu,...)
-  // Không bọc gì cả
   {
     path: PATHS.HOME,
     element: <Home />,
@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
 
   // Nhóm 2: Các trang Public (Chỉ dành cho người CHƯA đăng nhập)
   {
-    element: <PublicRoute />, // Bọc PublicRoute ở đây
+    element: <PublicRoute />,
     children: [
       {
         path: PATHS.LOGIN,
@@ -33,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: PATHS.FORGOTPASSWORD,
         element: <ForgotPassword />,
+      },
+      {
+        path: PATHS.RESET_PASSWORD,
+        element: <ResetPassword />,
       },
     ],
   },

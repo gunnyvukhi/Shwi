@@ -17,9 +17,11 @@
 }
 
 @media (min-width: 640px) {
+
   .right-panel {
     padding: 3rem;
   }
+
   .login-wrapper {
     overflow: hidden;
   }
@@ -31,7 +33,7 @@
 }
 
 .form-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .login-form {
@@ -68,7 +70,7 @@
 
 .footer-text {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
   color: #a3a3a3;
   font-size: 0.88rem;
 }
