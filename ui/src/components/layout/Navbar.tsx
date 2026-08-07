@@ -6,6 +6,7 @@ import './NavBar.css';
 import demouser from '../../assets/demo_user.jpeg';
 import logo from '../../assets/logo.png';
 import { FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 
 type Props = {
     selected?: number;
@@ -14,7 +15,7 @@ type Props = {
 interface NavBtn {
   name: string;
   icon: string;
-  url: string
+  url: string;
 }
 
 interface profBtn {
@@ -25,33 +26,35 @@ interface profBtn {
 }
 
 const Navbar: React.FC<Props> = ({selected=1 }) => {
+    const { t } = useLanguage();
 
     const navBtnList1: NavBtn[] = [
-        { name: 'Trang Chủ', icon: 'fas fa-house-user', url: 'home' },
-        { name: 'Tập luyện', icon: 'fas fa-dumbbell', url: 'exercise' },
-        { name: 'Dinh dưỡng', icon: 'fas fa-utensils', url: 'nutrition' }]
+        { name: t('nav.home'), icon: 'fas fa-house-user', url: 'home' },
+        { name: t('nav.exercise'), icon: 'fas fa-dumbbell', url: 'exercise' },
+        { name: t('nav.nutrition'), icon: 'fas fa-utensils', url: 'nutrition' }];
     const navBtnList2: NavBtn[] = [
-        { name: 'Lịch trình', icon: 'fas fa-calendar-alt', url: 'home' },
-        { name: 'Công cụ khác', icon: 'fas fa-tools', url: 'home' },
-        { name: 'Cửa hàng', icon: 'fas fa-shopping-cart', url: 'home' }]
+        { name: t('nav.schedule'), icon: 'fas fa-calendar-alt', url: 'home' },
+        { name: t('nav.tools'), icon: 'fas fa-tools', url: 'home' },
+        { name: t('nav.shop'), icon: 'fas fa-shopping-cart', url: 'home' }];
     const navBtnList3: NavBtn[] = [
-        { name: 'Premium', icon: 'fas fa-gem', url: 'home' },
-        { name: 'Premium', icon: 'fas fa-gem', url: 'home' },
+        { name: t('nav.premium'), icon: 'fas fa-gem', url: 'home' },
+        { name: t('nav.premium'), icon: 'fas fa-gem', url: 'home' },
     ];
 
     const logout = useAuthStore((state) => state.logout);
+    const user = useAuthStore((state) => state.user);
 
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        logout(); // Xóa data trong Zustand -> isAuthenticated về false
-        navigate(PATHS.LOGIN); // Chuyển về trang login
+        logout();
+        navigate(PATHS.LOGIN);
     };
 
     const profBtnList: profBtn[] = [
-        { name: 'Trang cá nhân', icon: <FaUser className='profile-dropdown-icon'/>, onclick: () => {}, side: false },
-        { name: 'Cài đặt', icon: <FaCog className='profile-dropdown-icon'/> , onclick: () => {}, side: false },
-        { name: 'Đăng xuất', icon: <FaSignOutAlt className='profile-dropdown-icon'/>, onclick: handleLogout, side: false },
+        { name: t('nav.profile'), icon: <FaUser className='profile-dropdown-icon'/>, onclick: () => {}, side: false },
+        { name: t('nav.settings'), icon: <FaCog className='profile-dropdown-icon'/> , onclick: () => {}, side: false },
+        { name: t('nav.logout'), icon: <FaSignOutAlt className='profile-dropdown-icon'/>, onclick: handleLogout, side: false },
     ];
     const [selectedBtn, setSelectedBtn] = useState(selected);
 
@@ -59,7 +62,6 @@ const Navbar: React.FC<Props> = ({selected=1 }) => {
         ? '-70px'
         : `${44 * (selectedBtn - 1) + 4 * selectedBtn + 16}px`;
 
-    console.log(default_highlight)
     const [hover, setHover] = useState(false);
     return (
         <div id="nav-bar">
@@ -111,11 +113,11 @@ const Navbar: React.FC<Props> = ({selected=1 }) => {
             <div id="nav-footer">
                 <div id="nav-footer-heading">
                     <div id="nav-footer-avatar">
-                        <img src={demouser} alt="User Avatar" />
+                        <img src={user?.avatarUrl || demouser} alt="User Avatar" />
                     </div>
                     <div id="nav-footer-titlebox">
-                        <a id="nav-footer-title" href="#">{`${"Your"} ${"Name"}`}</a>
-                        <span id="nav-footer-subtitle">User</span>
+                        <a id="nav-footer-title" href="#">{user?.name || "User"}</a>
+                        <span id="nav-footer-subtitle">{t('common.user')}</span>
                     </div>
                     <label htmlFor="nav-footer-toggle"><i className="fas fa-angle-up"></i></label>
                 </div>
@@ -131,5 +133,4 @@ const Navbar: React.FC<Props> = ({selected=1 }) => {
     )
 }
 
-
-export default Navbar
+export default Navbar;

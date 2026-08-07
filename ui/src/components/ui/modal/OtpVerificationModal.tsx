@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Mail, Lock, X } from 'lucide-react';
 import { authService } from '../../../services/authService';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { useLanguage } from '../../../context/LanguageContext';
 import './OtpVerificationModal.css';
 
 interface OtpVerificationModalProps {
@@ -17,7 +18,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   onSuccess,
   onClose,
 }) => {
-  // Step state: 'otp' for entering code; 'new_password' for setting password after OTP
+  const { t } = useLanguage();
   const [step, setStep] = useState<'otp' | 'new_password'>('otp');
   const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
   const [verifiedOtp, setVerifiedOtp] = useState<string>('');
@@ -29,7 +30,6 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   const [resendTimer, setResendTimer] = useState(60);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const setAuth = useAuthStore((state) => state.setAuth);
 
   useEffect(() => {
     if (step === 'otp' && inputRefs.current[0]) {
@@ -51,7 +51,6 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
     setDigits(newDigits);
     setError(null);
 
-    // Auto-advance to next input
     if (value && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -79,7 +78,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
     e.preventDefault();
     const otpCode = digits.join('');
     if (otpCode.length !== 6) {
-      setError('Please enter all 6 digits of the OTP code.');
+      setError(t('otpModal.otpLengthError'));
       return;
     }
 
@@ -90,16 +89,15 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
       if (purpose === 'email_verification') {
         const res = await authService.verifyEmailOtp(email, otpCode);
         if (res.user && res.token) {
-          setAuth(res.user, res.token);
+          useAuthStore.getState().setAuth(res.user, res.token);
         }
         onSuccess(res);
       } else {
-        // Password reset: Save verified OTP and transition to password entry
         setVerifiedOtp(otpCode);
         setStep('new_password');
       }
     } catch (err: any) {
-      setError(err.message || 'Verification failed. Please check the code.');
+      setError(err.message || t('login.loginFailedDefault'));
     } finally {
       setLoading(false);
     }
@@ -110,12 +108,12 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
     setError(null);
 
     if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
+      setError(t('resetPassword.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match. Please re-enter your password.');
+      setError(t('resetPassword.passwordsDoNotMatch'));
       return;
     }
 
@@ -124,11 +122,11 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
     try {
       const res = await authService.resetPasswordOtp(email, verifiedOtp, newPassword);
       if (res.user && res.token) {
-        setAuth(res.user, res.token);
+        useAuthStore.getState().setAuth(res.user, res.token);
       }
       onSuccess(res);
     } catch (err: any) {
-      setError(err.message || 'Failed to reset password. Please try again.');
+      setError(err.message || t('forgotPassword.failedDefault'));
     } finally {
       setLoading(false);
     }
@@ -141,10 +139,10 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
 
     try {
       await authService.resendOtp(email, purpose);
-      setResendMsg('A new 6-digit OTP code has been sent to your email.');
+      setResendMsg(t('otpModal.resendSentMsg'));
       setResendTimer(60);
     } catch (err: any) {
-      setError(err.message || 'Failed to resend OTP code.');
+      setError(err.message || t('forgotPassword.failedDefault'));
     }
   };
 
@@ -162,19 +160,19 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
         <h2 className="otp-title">
           {step === 'otp'
             ? purpose === 'email_verification'
-              ? 'Verify Your Email'
-              : 'Enter Security Code'
-            : 'Set New Password'}
+              ? t('otpModal.verifyEmailTitle')
+              : t('otpModal.enterCodeTitle')
+            : t('otpModal.setNewPasswordTitle')}
         </h2>
 
         <p className="otp-subtitle">
           {step === 'otp' ? (
             <>
-              We sent a 6-digit security code to<br />
+              {t('otpModal.sentCodeTo')}<br />
               <span className="otp-email-highlight">{email}</span>
             </>
           ) : (
-            'Enter your new password below to reset your account and log in immediately.'
+            t('resetPassword.descriptionPreFilled')
           )}
         </p>
 
@@ -206,21 +204,21 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               disabled={loading || digits.join('').length !== 6}
             >
               {loading
-                ? 'Verifying...'
+                ? t('common.verifying')
                 : purpose === 'email_verification'
-                  ? 'Verify & Start Training'
-                  : 'Continue to Password'}
+                  ? t('otpModal.verifySuccessBtn')
+                  : t('otpModal.continuePasswordBtn')}
             </button>
 
             <div className="otp-resend-row">
-              Didn't receive the code?
+              {t('otpModal.didNotReceive')}
               {resendTimer > 0 ? (
                 <span style={{ color: '#94a3b8', marginLeft: '0.3rem' }}>
-                  Resend in {resendTimer}s
+                  {t('otpModal.resendIn', { seconds: resendTimer })}
                 </span>
               ) : (
                 <button type="button" className="otp-resend-btn" onClick={handleResend}>
-                  Resend OTP
+                  {t('otpModal.resendBtn')}
                 </button>
               )}
             </div>
@@ -229,10 +227,10 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
           <form onSubmit={handlePasswordSubmit}>
             <div className="otp-password-group">
               <div>
-                <label className="otp-input-label">New Password</label>
+                <label className="otp-input-label">{t('login.passwordLabel')}</label>
                 <input
                   type="password"
-                  placeholder="At least 6 characters"
+                  placeholder={t('otpModal.newPasswordPlaceholder')}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="otp-password-input"
@@ -243,10 +241,10 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               </div>
 
               <div>
-                <label className="otp-input-label">Confirm New Password</label>
+                <label className="otp-input-label">{t('resetPassword.confirmPasswordLabel')}</label>
                 <input
                   type="password"
-                  placeholder="Re-enter new password"
+                  placeholder={t('resetPassword.confirmPasswordPlaceholder')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="otp-password-input"
@@ -261,7 +259,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               className="otp-submit-btn"
               disabled={loading || !newPassword || !confirmPassword}
             >
-              {loading ? 'Resetting Password...' : 'Reset & Log In Now'}
+              {loading ? t('common.resettingPassword') : t('resetPassword.submitBtn')}
             </button>
           </form>
         )}

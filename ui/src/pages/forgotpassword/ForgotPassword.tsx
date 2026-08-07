@@ -12,8 +12,10 @@ import InputGroup from "../../components/ui/input/InputGroup";
 import SubmitButton from "../../components/ui/button/SubmitButton";
 import SocialButton from "../../components/ui/button/SocialButton";
 import OtpVerificationModal from "../../components/ui/modal/OtpVerificationModal";
-
+import LanguageToggle from "../../components/ui/button/LanguageToggle";
+import ShwiIcon from "../../components/ui/icon/ShwiIcon";
 import { useAuthStore } from '../../store/useAuthStore';
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -21,15 +23,15 @@ export default function ForgotPassword() {
   const [error, setError] = useState<string | null>(null);
   const [showOtpModal, setShowOtpModal] = useState(false);
 
-  const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!email.trim()) {
-      setError("Please enter your email address");
+      setError(t('forgotPassword.emailRequired'));
       return;
     }
 
@@ -43,7 +45,7 @@ export default function ForgotPassword() {
         navigate(`${PATHS.RESET_PASSWORD}?email=${encodeURIComponent(email)}`);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to process forgot password request.");
+      setError(err.message || t('forgotPassword.failedDefault'));
     } finally {
       setLoading(false);
     }
@@ -52,7 +54,7 @@ export default function ForgotPassword() {
   const handleOtpSuccess = (data: any) => {
     setShowOtpModal(false);
     if (data.user && data.token) {
-      setAuth(data.user, data.token);
+      useAuthStore.getState().setAuth(data.user, data.token);
       navigate(PATHS.DASHBOARD);
     } else {
       navigate(PATHS.LOGIN);
@@ -60,16 +62,35 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="login-wrapper" style={{ backgroundColor: theme.colors.background }}>
+    <div className="login-wrapper" style={{ backgroundColor: theme.colors.background, position: 'relative' }}>
+      {/* Top right language toggle switcher */}
+      <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 20 }}>
+        <LanguageToggle />
+      </div>
+
       {/* Left panel — gym photo */}
       <LeftLoginBox />
+
       {/* Right panel — login form */}
       <div className="right-panel">
-
+        <ShwiIcon size={22} mobile />
         <div className="form-wrapper">
           <div className="form-header">
-            <Title mb={"0"} fontSize={"2.4rem"} lineHeight={1.1} multiLine={[{ text: "Forgot your", color: theme.colors.title }, { text: " Password?", color: theme.colors.primary }]} />
-            <Description mt={"0.5rem"} mb={"0"} fontSize={"0.9rem"} content={"Enter your email address and we'll send a 6-digit OTP code to reset your password so you can get back to training."} />
+            <Title
+              mb={"0"}
+              fontSize={"2.4rem"}
+              lineHeight={1.1}
+              multiLine={[
+                { text: t('forgotPassword.title1'), color: theme.colors.title },
+                { text: t('forgotPassword.title2'), color: theme.colors.primary }
+              ]}
+            />
+            <Description
+              mt={"0.5rem"}
+              mb={"0"}
+              fontSize={"0.9rem"}
+              content={t('forgotPassword.description')}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -87,15 +108,25 @@ export default function ForgotPassword() {
             )}
 
             {/* Email */}
-            <InputGroup id={"email"} label={"Email address"} type={"email"} placeholder={"You@gmail.com"} value={email} onChange={(e) => setEmail(e)} />
+            <InputGroup
+              id={"email"}
+              label={t('login.emailLabel')}
+              type={"email"}
+              placeholder={t('login.emailPlaceholder')}
+              value={email}
+              onChange={(e) => setEmail(e)}
+            />
 
             {/* Submit */}
-            <SubmitButton label={loading ? "Sending OTP..." : "Send Reset Code"} disabled={loading} />
+            <SubmitButton
+              label={loading ? t('common.sendingOtp') : t('forgotPassword.submitBtn')}
+              disabled={loading}
+            />
 
             {/* Divider */}
             <div className="divider-group">
               <div className="divider-line" />
-              <span className="divider-text">or</span>
+              <span className="divider-text">{t('common.or')}</span>
               <div className="divider-line" />
             </div>
 
@@ -107,9 +138,9 @@ export default function ForgotPassword() {
           </form>
 
           <p className="footer-text">
-            Remember your password?{" "}
+            {t('forgotPassword.rememberPassword')}{" "}
             <Link to={PATHS.LOGIN} className="footer-link">
-              Login
+              {t('register.loginLink')}
             </Link>
           </p>
         </div>

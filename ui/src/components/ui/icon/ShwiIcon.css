@@ -2,6 +2,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.logo-container:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .logo-icon {
@@ -17,16 +26,24 @@
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 800;
   font-size: 1.25rem;
-  color: #fff;
+  color: var(--text-main, #fff);
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-
 
 .mobile-logo-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-logo-container:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 @media (min-width: 1024px) {
@@ -50,5 +67,5 @@
   font-size: 1.2rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text-main, #fff);
 }

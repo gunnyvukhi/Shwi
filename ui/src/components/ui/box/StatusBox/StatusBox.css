@@ -1,0 +1,21 @@
+.SelectedMuscleStatusBox {
+    display: grid;
+    grid-template-columns: auto 90px;
+    align-items: center;
+    justify-content: start;
+    gap: 8px;
+}
+
+.status-svg-wrapper {
+    display: grid;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 4px;
+    width: 152px;
+}
+
+.status-box-title {
+    display: inline-block;
+    min-width: 85px;
+    white-space: nowrap;
+}

@@ -5,6 +5,10 @@
     font-family: 'Barlow', 'Barlow Condensed', system-ui, sans-serif;
     padding-bottom: 6rem;
     transition: background-color 0.3s ease, color 0.3s ease;
+    --content-color1: var(--bg-card);
+    --text-color1: var(--text-main);
+    --navbar-dark-primary: var(--bg-card-solid);
+    --navbar-dark-secondary: var(--border-color);
 }
 
 /* Theme variables are dynamically injected from theme.ts via getThemeStyles() */
@@ -208,6 +212,22 @@ main {
     display: flex;
     flex-direction: column;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.body-schema-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.body-schema-panel .card-header {
+    justify-content: center;
+    text-align: center;
+}
+
+.body-schema-panel .card-title {
+    text-align: center;
+    width: 100%;
 }
 
 @media (min-width: 640px) {

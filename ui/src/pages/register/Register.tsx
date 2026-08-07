@@ -15,6 +15,9 @@ import Checkbox from "../../components/ui/input/Checkbox";
 import SubmitButton from "../../components/ui/button/SubmitButton";
 import SocialButton from "../../components/ui/button/SocialButton";
 import OtpVerificationModal from "../../components/ui/modal/OtpVerificationModal";
+import LanguageToggle from "../../components/ui/button/LanguageToggle";
+import ShwiIcon from "../../components/ui/icon/ShwiIcon";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -25,23 +28,23 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
 
-  const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!name.trim()) {
-      setError("Full name is required");
+      setError(t('register.nameRequired'));
       return;
     }
     if (!email.trim()) {
-      setError("Email address is required");
+      setError(t('register.emailRequired'));
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t('register.passwordMinLength'));
       return;
     }
 
@@ -52,13 +55,13 @@ export default function Register() {
       if (res.requireOtp) {
         setShowOtpModal(true);
       } else if (res.user && res.token) {
-        setAuth(res.user, res.token);
+        useAuthStore.getState().setAuth(res.user, res.token);
         navigate(PATHS.DASHBOARD);
       } else {
         navigate(PATHS.LOGIN);
       }
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || t('register.failedDefault'));
     } finally {
       setLoading(false);
     }
@@ -67,7 +70,7 @@ export default function Register() {
   const handleOtpSuccess = (data: any) => {
     setShowOtpModal(false);
     if (data.user && data.token) {
-      setAuth(data.user, data.token);
+      useAuthStore.getState().setAuth(data.user, data.token);
       navigate(PATHS.DASHBOARD);
     } else {
       navigate(PATHS.LOGIN);
@@ -75,16 +78,35 @@ export default function Register() {
   };
 
   return (
-    <div className="login-wrapper" style={{ backgroundColor: theme.colors.background }}>
+    <div className="login-wrapper" style={{ backgroundColor: theme.colors.background, position: 'relative' }}>
+      {/* Top right language toggle switcher */}
+      <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 20 }}>
+        <LanguageToggle />
+      </div>
+
       {/* Left panel — gym photo */}
       <LeftLoginBox />
+
       {/* Right panel — login form */}
       <div className="right-panel">
-
+        <ShwiIcon size={22} mobile />
         <div className="form-wrapper">
           <div className="form-header">
-            <Title mb={"0"} fontSize={"2.4rem"} lineHeight={1.1} multiLine={[{ text: "Join the elite,", color: theme.colors.title }, { text: "athlete.", color: theme.colors.primary }]} />
-            <Description mt={"0.5rem"} mb={"0"} fontSize={"0.9rem"} content={"Create your account to start your training journey."} />
+            <Title
+              mb={"0"}
+              fontSize={"2.4rem"}
+              lineHeight={1.1}
+              multiLine={[
+                { text: t('register.joinTitle1'), color: theme.colors.title },
+                { text: t('register.joinTitle2'), color: theme.colors.primary }
+              ]}
+            />
+            <Description
+              mt={"0.5rem"}
+              mb={"0"}
+              fontSize={"0.9rem"}
+              content={t('register.description')}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -102,21 +124,49 @@ export default function Register() {
             )}
 
             {/* Name */}
-            <InputGroup id={"name"} label={"Full name"} type={"text"} placeholder={"Your name"} value={name} onChange={(e) => setName(e)} />
+            <InputGroup
+              id={"name"}
+              label={t('register.fullNameLabel')}
+              type={"text"}
+              placeholder={t('register.fullNamePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e)}
+            />
+
             {/* Email */}
-            <InputGroup id={"email"} label={"Email address"} type={"email"} placeholder={"You@gmail.com"} value={email} onChange={(e) => setEmail(e)} />
+            <InputGroup
+              id={"email"}
+              label={t('login.emailLabel')}
+              type={"email"}
+              placeholder={t('login.emailPlaceholder')}
+              value={email}
+              onChange={(e) => setEmail(e)}
+            />
+
             {/* Password */}
-            <PasswordInputGroup password={password} setPassword={(e) => setPassword(e)} showForgotPassword={false} />
+            <PasswordInputGroup
+              password={password}
+              setPassword={(e) => setPassword(e)}
+              showForgotPassword={false}
+            />
+
             {/* Remember me */}
-            <Checkbox label={"Keep me logged in for 30 days"} checked={rememberMe} onChange={(e) => setRememberMe(e)} />
+            <Checkbox
+              label={t('login.keepLoggedIn')}
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e)}
+            />
 
             {/* Submit */}
-            <SubmitButton label={loading ? "Sending OTP..." : "Create Account"} disabled={loading} />
+            <SubmitButton
+              label={loading ? t('common.sendingOtp') : t('register.submitBtn')}
+              disabled={loading}
+            />
 
             {/* Divider */}
             <div className="divider-group">
               <div className="divider-line" />
-              <span className="divider-text">or</span>
+              <span className="divider-text">{t('common.or')}</span>
               <div className="divider-line" />
             </div>
 
@@ -128,9 +178,9 @@ export default function Register() {
           </form>
 
           <p className="footer-text">
-            Already have an account?{" "}
+            {t('register.alreadyHaveAccount')}{" "}
             <Link to={PATHS.LOGIN} className="footer-link">
-              Login
+              {t('register.loginLink')}
             </Link>
           </p>
         </div>

@@ -12,6 +12,8 @@ import Description from "../../components/ui/Text/Description";
 import InputGroup from "../../components/ui/input/InputGroup";
 import PasswordInputGroup from "../../components/ui/input/PasswordInputGroup";
 import SubmitButton from "../../components/ui/button/SubmitButton";
+import LanguageToggle from "../../components/ui/button/LanguageToggle";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -23,8 +25,8 @@ export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const isPreFilled = Boolean(searchParams.get("email") && (searchParams.get("otp") || searchParams.get("token")));
 
@@ -42,15 +44,15 @@ export default function ResetPassword() {
     setSuccessMsg(null);
 
     if (!otp.trim()) {
-      setError("6-digit OTP reset code is required.");
+      setError(t('resetPassword.otpRequired'));
       return;
     }
     if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters long.");
+      setError(t('resetPassword.passwordMinLength'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match. Please try again.");
+      setError(t('resetPassword.passwordsDoNotMatch'));
       return;
     }
 
@@ -58,10 +60,10 @@ export default function ResetPassword() {
 
     try {
       const res = await authService.resetPasswordOtp(email, otp, newPassword);
-      setSuccessMsg(res.message || "Password reset successfully!");
+      setSuccessMsg(res.message || t('resetPassword.successMessage'));
 
       if (res.user && res.token) {
-        setAuth(res.user, res.token);
+        useAuthStore.getState().setAuth(res.user, res.token);
         setTimeout(() => {
           navigate(PATHS.DASHBOARD);
         }, 800);
@@ -71,22 +73,39 @@ export default function ResetPassword() {
         }, 1500);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to reset password.");
+      setError(err.message || t('resetPassword.passwordsDoNotMatch'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-wrapper" style={{backgroundColor: theme.colors.background}}>
-      <LeftLoginBox/>
+    <div className="login-wrapper" style={{ backgroundColor: theme.colors.background, position: 'relative' }}>
+      {/* Top right language toggle switcher */}
+      <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 20 }}>
+        <LanguageToggle />
+      </div>
+
+      <LeftLoginBox />
       <div className="right-panel">
-        <ShwiIcon size={22} mobile/>
+        <ShwiIcon size={22} mobile />
 
         <div className="form-wrapper">
           <div className="form-header">
-            <Title mb={"0"} fontSize={"2.4rem"} lineHeight={1.1} multiLine={[{text: "Set New", color: theme.colors.title}, {text: " Password", color: theme.colors.primary}]}/>
-            <Description mt={"0.5rem"} fontSize={"0.9rem"} content={isPreFilled ? "Enter your new password below to reset your account and log in immediately." : "Enter your 6-digit OTP security code and new password."} />
+            <Title
+              mb={"0"}
+              fontSize={"2.4rem"}
+              lineHeight={1.1}
+              multiLine={[
+                { text: t('resetPassword.title1'), color: theme.colors.title },
+                { text: t('resetPassword.title2'), color: theme.colors.primary }
+              ]}
+            />
+            <Description
+              mt={"0.5rem"}
+              fontSize={"0.9rem"}
+              content={isPreFilled ? t('resetPassword.descriptionPreFilled') : t('resetPassword.descriptionNormal')}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -121,22 +140,40 @@ export default function ResetPassword() {
             {/* Email & OTP (Hidden if already pre-filled from modal/URL) */}
             {!isPreFilled && (
               <>
-                <InputGroup id={"email"} label={"Email address"} type={"email"} placeholder={"You@gmail.com"} value={email} onChange={(e) => setEmail(e)} />
-                <InputGroup id={"otp"} label={"6-digit OTP Code"} type={"text"} placeholder={"Enter 6-digit code"} value={otp} onChange={(e) => setOtp(e)} />
+                <InputGroup
+                  id={"email"}
+                  label={t('login.emailLabel')}
+                  type={"email"}
+                  placeholder={t('login.emailPlaceholder')}
+                  value={email}
+                  onChange={(e) => setEmail(e)}
+                />
+                <InputGroup
+                  id={"otp"}
+                  label={t('resetPassword.otpLabel')}
+                  type={"text"}
+                  placeholder={t('resetPassword.otpPlaceholder')}
+                  value={otp}
+                  onChange={(e) => setOtp(e)}
+                />
               </>
             )}
 
             {/* New Password */}
-            <PasswordInputGroup password={newPassword} setPassword={(e)=>setNewPassword(e)} showForgotPassword={false}/>
+            <PasswordInputGroup
+              password={newPassword}
+              setPassword={(e) => setNewPassword(e)}
+              showForgotPassword={false}
+            />
 
             {/* Confirm Password */}
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', color: theme.colors.text2, marginBottom: '0.4rem' }}>
-                Confirm New Password
+                {t('resetPassword.confirmPasswordLabel')}
               </label>
               <input
                 type="password"
-                placeholder="Re-enter new password"
+                placeholder={t('resetPassword.confirmPasswordPlaceholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{
@@ -146,7 +183,7 @@ export default function ResetPassword() {
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '10px',
                   padding: '0 1rem',
-                  color: theme.colors.text,
+                  color: theme.colors.title,
                   fontSize: '0.95rem',
                   outline: 'none',
                   boxSizing: 'border-box'
@@ -156,13 +193,16 @@ export default function ResetPassword() {
             </div>
 
             {/* Submit */}
-            <SubmitButton label={loading ? "Resetting..." : "Reset & Log In Now"} disabled={loading}/>
+            <SubmitButton
+              label={loading ? t('common.resetting') : t('resetPassword.submitBtn')}
+              disabled={loading}
+            />
           </form>
 
           <p className="footer-text">
-            Back to{" "}
+            {t('common.backTo')}{" "}
             <Link to={PATHS.LOGIN} className="footer-link">
-              Login
+              {t('register.loginLink')}
             </Link>
           </p>
         </div>

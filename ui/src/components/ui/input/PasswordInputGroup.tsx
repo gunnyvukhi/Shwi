@@ -4,25 +4,29 @@ import './PasswordInputGroup.css';
 import theme from '../../../config/theme';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../../routes/paths';
+import { useLanguage } from '../../../context/LanguageContext';
 
 interface PasswordInputGroupProps {
   showForgotPassword?: boolean;
   password: string;
   setPassword: (value: string) => void;
+  label?: string;
 }
 
 const PasswordInputGroup: React.FC<PasswordInputGroupProps> = ({
   showForgotPassword = true,
   password,
   setPassword,
+  label,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <div className="input-group">
       <div className="password-header">
-        <label htmlFor="password" className="input-label" style={{color: theme.colors.text2}}>
-          Password
+        <label htmlFor="password" className="input-label" style={{ color: theme.colors.text2 }}>
+          {label || t('login.passwordLabel')}
         </label>
         {showForgotPassword && (
           <Link
@@ -30,10 +34,9 @@ const PasswordInputGroup: React.FC<PasswordInputGroupProps> = ({
             className="forgot-password"
             style={{ color: theme.colors.primary }}
           >
-            Forgot password?
+            {t('login.forgotPassword')}
           </Link>
         )}
-        
       </div>
       <div className="password-input-wrap">
         <input
@@ -43,13 +46,13 @@ const PasswordInputGroup: React.FC<PasswordInputGroupProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="text-input password-input"
-          style={{backgroundColor: theme.colors.inputbg, color: theme.colors.title}}
+          style={{ backgroundColor: theme.colors.inputbg, color: theme.colors.title }}
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
           className="password-toggle"
-          style={{color: theme.colors.text2}}
+          style={{ color: theme.colors.text2 }}
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

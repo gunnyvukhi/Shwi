@@ -11,8 +11,10 @@ import {
     LogOut
 } from 'lucide-react';
 import ShwiIcon from '../ui/icon/ShwiIcon';
+import LanguageToggle from '../ui/button/LanguageToggle';
 import { useAuthStore } from '../../store/useAuthStore';
 import { PATHS } from '../../routes/paths';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface HeaderProps {
     isDarkTheme?: boolean;
@@ -28,6 +30,7 @@ export default function Header({
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     const [profileOpen, setProfileOpen] = useState(false);
 
@@ -35,6 +38,13 @@ export default function Header({
         logout();
         navigate(PATHS.LOGIN);
     };
+
+    const navItems = [
+        { key: 'dashboard', name: t('nav.dashboard'), path: PATHS.DASHBOARD },
+        { key: 'exercise', name: t('nav.exercise'), path: '#' },
+        { key: 'nutrition', name: t('nav.nutrition'), path: '#' },
+        { key: 'profile', name: t('nav.profile'), path: PATHS.PROFILE },
+    ];
 
     return (
         <header>
@@ -44,16 +54,11 @@ export default function Header({
                 </div>
 
                 <nav className="desktop-nav">
-                    {[
-                        { name: 'Dashboard', path: PATHS.DASHBOARD },
-                        { name: 'Workouts', path: '#' },
-                        { name: 'Nutrition', path: '#' },
-                        { name: 'Profile', path: PATHS.PROFILE },
-                    ].map((item) => {
-                        const isActive = activeNav === item.name;
+                    {navItems.map((item) => {
+                        const isActive = activeNav === item.name || activeNav === item.key;
                         return (
                             <a
-                                key={item.name}
+                                key={item.key}
                                 href={item.path}
                                 className={isActive ? 'active-primary' : ''}
                                 aria-current={isActive ? 'page' : undefined}
@@ -71,6 +76,7 @@ export default function Header({
                 </nav>
 
                 <div className="header-actions">
+                    <LanguageToggle />
                     <button className="icon-btn" aria-label="Messages">
                         <MessageSquare size={20} />
                     </button>
@@ -82,7 +88,7 @@ export default function Header({
                             className="icon-btn"
                             aria-label="Toggle theme"
                             onClick={onToggleTheme}
-                            title={isDarkTheme ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            title={isDarkTheme ? t('nav.lightMode') : t('nav.darkMode')}
                         >
                             {isDarkTheme ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
@@ -107,19 +113,19 @@ export default function Header({
                             </div>
                             <div className="dropdown-divider"></div>
                             <button className="dropdown-item">
-                                <User size={16} /> Profile
+                                <User size={16} /> {t('nav.profile')}
                             </button>
                             <button className="dropdown-item">
-                                <Settings size={16} /> Settings
+                                <Settings size={16} /> {t('nav.settings')}
                             </button>
                             {onToggleTheme && (
                                 <button className="dropdown-item" onClick={onToggleTheme}>
-                                    {isDarkTheme ? <Sun size={16} /> : <Moon size={16} />} {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
+                                    {isDarkTheme ? <Sun size={16} /> : <Moon size={16} />} {isDarkTheme ? t('nav.lightMode') : t('nav.darkMode')}
                                 </button>
                             )}
                             <div className="dropdown-divider"></div>
                             <button className="dropdown-item danger" onClick={handleLogout}>
-                                <LogOut size={16} /> Logout
+                                <LogOut size={16} /> {t('nav.logout')}
                             </button>
                         </div>
                     )}

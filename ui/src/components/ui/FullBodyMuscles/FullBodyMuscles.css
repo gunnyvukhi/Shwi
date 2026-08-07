@@ -1,0 +1,235 @@
+#interactive_dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto;
+    margin-bottom: 0px;
+}
+
+.human-body {
+    display: inline-block;
+    position: relative;
+    height: 432px;
+    width: 100%;
+    vertical-align: middle;
+}
+
+#interactive_dia #front {
+    margin-left: 18px;
+}
+
+#interactive_dia #back {
+    margin-left: 28.8px;
+}
+
+.human-body svg:hover {
+    cursor: pointer;
+}
+
+/* Base SVG path & polygon styling */
+.human-body svg path,
+.human-body svg polygon,
+.human-body svg line {
+    fill: #475569;
+    stroke: #64748b;
+    stroke-width: 0.5px;
+    transition: fill 0.2s ease, stroke 0.2s ease, filter 0.2s ease;
+}
+
+/* Dark mode: high-contrast slate fill with sky-blue outlines */
+.theme-dark .human-body svg path,
+.theme-dark .human-body svg polygon,
+.theme-dark .human-body svg line {
+    fill: #334155;
+    stroke: #38bdf8;
+    stroke-width: 0.8px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* Dark mode hover state: glowing energetic orange */
+.theme-dark .human-body svg:hover path,
+.theme-dark .human-body svg:hover polygon,
+.theme-dark .human-body svg:hover line {
+    fill: #ff5722;
+    stroke: #ffab91;
+    filter: drop-shadow(0 0 8px rgba(255, 87, 34, 0.7));
+}
+
+/* Light mode styling */
+.theme-light .human-body svg path,
+.theme-light .human-body svg polygon,
+.theme-light .human-body svg line {
+    fill: #94a3b8;
+    stroke: #475569;
+    stroke-width: 0.8px;
+}
+
+.theme-light .human-body svg:hover path,
+.theme-light .human-body svg:hover polygon,
+.theme-light .human-body svg:hover line {
+    fill: #ff5722;
+    stroke: #d84315;
+}
+
+.human-body svg {
+    position: absolute;
+    left: 50%;
+}
+
+.human-body svg.head {
+    margin-left: -28.5px;
+    top: -6px;
+}
+
+.human-body svg.traps {
+    margin-left: -54.2px;
+    top: 51px;
+    width: 100px;
+}
+
+.human-body svg.chest {
+    margin-left: -50.5px;
+    top: 86px;
+    z-index: 10000;
+}
+
+.human-body svg.shoulder {
+    margin-left: -69.5px;
+    top: 76.5px;
+}
+
+.human-body svg.abs {
+    margin-left: -46.5px;
+    top: 115px;
+    z-index: 1000;
+}
+
+.human-body svg.calf {
+    margin-left: -48.5px;
+    top: 338px;
+}
+
+.human-body svg.thigh {
+    margin-left: -53.5px;
+    top: 203px;
+}
+
+.human-body svg.bicep {
+    margin-left: -71.5px;
+    top: 105px;
+}
+
+.human-body svg.forearm {
+    margin-left: -87.5px;
+    top: 157px;
+}
+
+
+.human-body svg.head1 {
+    margin-left: -27.5px;
+    top: -6px;
+}
+
+.human-body svg.traps1 {
+    margin-left: -40.2px;
+    top: 49px;
+}
+
+.human-body svg.shoulder1 {
+    margin-left: -75.5px;
+    top: 71.5px;
+}
+
+.human-body svg.upper {
+    margin-left: -39.5px;
+    top: 65px;
+    z-index: 10000;
+}
+
+.human-body svg.lats {
+    margin-left: -53.5px;
+    top: 75px;
+    z-index: 10000;
+}
+
+.human-body svg.lower {
+    margin-left: -49.5px;
+    top: 153px;
+    z-index: 1000;
+}
+
+.human-body svg.calf1 {
+    margin-left: -59.5px;
+    top: 326px;
+}
+
+.human-body svg.glutes {
+    margin-left: -48.5px;
+    top: 200px;
+}
+
+.human-body svg.hams {
+    margin-left: -56.5px;
+    top: 240px;
+}
+
+.human-body svg.forearm1 {
+    margin-left: -112.5px;
+    top: 157px;
+}
+
+.human-body svg.tricep {
+    margin-left: -81.5px;
+    top: 100px;
+}
+
+#interactive_dia .muscle-toggle-container {
+    display: inline-flex;
+    background-color: var(--bg-card-solid, #18181b);
+    border: 1px solid var(--border-color, #27272a);
+    border-radius: 10px;
+    padding: 3px;
+    margin-top: 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+#interactive_dia .change-btn {
+    padding: 6px 20px;
+    background: transparent;
+    color: var(--text-muted, #94a3b8);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+#interactive_dia .change-btn:hover {
+    color: var(--text-main, #ffffff);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+#interactive_dia .change-btn.active {
+    background-color: var(--primary, #38bdf8);
+    color: #0f172a;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+}
+
+#interactive_dia .SelectedMuscleName {
+    margin: 16px 0 8px 12px;
+    font-weight: bold;
+    min-height: 24px;
+    line-height: 24px;
+}
+
+#interactive_dia .SelectedMuscleStatus {
+    position: relative;
+    height: 32px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 88px auto;
+    align-items: center;
+}

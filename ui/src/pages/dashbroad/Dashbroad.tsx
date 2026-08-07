@@ -10,7 +10,6 @@ import {
     Home,
     BarChart2,
     User,
-    Target,
     Edit2,
     X
 } from 'lucide-react';
@@ -27,6 +26,8 @@ import {
 } from 'recharts';
 import Header from '../../components/layout/Header';
 import theme, { getThemeStyles } from '../../config/theme';
+import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
+import { useLanguage } from '../../context/LanguageContext';
 
 // Mock Data
 const activityDataDay = [
@@ -48,6 +49,7 @@ const weightDataMonth = [
 ];
 
 export default function Dashboard() {
+    const { t, language } = useLanguage();
     const [activityFilter, setActivityFilter] = useState<'Day' | 'Week' | 'Month'>('Day');
     const [goalModalOpen, setGoalModalOpen] = useState(false);
     const [goalType, setGoalType] = useState<'Lose' | 'Gain'>('Lose');
@@ -71,6 +73,12 @@ export default function Dashboard() {
         activityFilter === 'Day' ? activityDataDay :
             activityFilter === 'Week' ? activityDataWeek : activityDataMonth;
 
+    const getFilterLabel = (filter: 'Day' | 'Week' | 'Month') => {
+        if (filter === 'Day') return t('dashboard.day');
+        if (filter === 'Week') return t('dashboard.week');
+        return t('dashboard.month');
+    };
+
     return (
         <div
             className={`app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
@@ -82,18 +90,44 @@ export default function Dashboard() {
             <main>
                 <div className="page-header">
                     <div>
-                        <h1 className="page-title">Overview</h1>
-                        <p className="page-date">Thursday, October 24</p>
+                        <h1 className="page-title">{t('dashboard.overview')}</h1>
+                        <p className="page-date">
+                            {language === 'vi' ? 'Thứ Năm, 24 Tháng 10' : 'Thursday, October 24'}
+                        </p>
                     </div>
-                    <button className="share-btn">Share Stats</button>
+                    <button className="share-btn">{t('dashboard.shareStats')}</button>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="stats-grid">
-                    <StatCard icon={<Heart color={theme.accents.rose} />} label="Heart Rate" value="117 bpm" subValue="Resting: 62 bpm" bg={theme.accents.roseBg} />
-                    <StatCard icon={<Moon color={theme.accents.indigo} />} label="Sleep" value="7 h 23 m" subValue="Quality: 85%" bg={theme.accents.indigoBg} />
-                    <StatCard icon={<Activity color="var(--primary)" />} label="Steps" value="12,456" subValue="Goal: 10,000" bg={theme.accents.skyBg} />
-                    <StatCard icon={<Flame color={theme.accents.orange} />} label="Active Time" value="1 h 49 m" subValue="Calories: 640 kcal" bg={theme.accents.orangeBg} />
+                    <StatCard
+                        icon={<Heart color={theme.accents.rose} />}
+                        label={t('dashboard.heartRate')}
+                        value="117 bpm"
+                        subValue={t('dashboard.resting', { val: '62 bpm' })}
+                        bg={theme.accents.roseBg}
+                    />
+                    <StatCard
+                        icon={<Moon color={theme.accents.indigo} />}
+                        label={t('dashboard.sleep')}
+                        value="7 h 23 m"
+                        subValue={t('dashboard.sleepQuality', { val: '85%' })}
+                        bg={theme.accents.indigoBg}
+                    />
+                    <StatCard
+                        icon={<Activity color="var(--primary)" />}
+                        label={t('dashboard.steps')}
+                        value="12,456"
+                        subValue={t('dashboard.stepGoal', { val: '10,000' })}
+                        bg={theme.accents.skyBg}
+                    />
+                    <StatCard
+                        icon={<Flame color={theme.accents.orange} />}
+                        label={t('dashboard.activeTime')}
+                        value="1 h 49 m"
+                        subValue={t('dashboard.calories', { val: '640 kcal' })}
+                        bg={theme.accents.orangeBg}
+                    />
                 </div>
 
                 {/* Charts & Body Layout */}
@@ -104,8 +138,10 @@ export default function Dashboard() {
                         <div className="card-panel">
                             <div className="card-header">
                                 <div>
-                                    <h2 className="card-title">Activity <span className="text-primary">Burn</span></h2>
-                                    <p className="card-subtitle">Calories burned over time</p>
+                                    <h2 className="card-title">
+                                        {t('dashboard.activityBurnTitle')} <span className="text-primary">{t('dashboard.activityBurnHighlight')}</span>
+                                    </h2>
+                                    <p className="card-subtitle">{t('dashboard.activityBurnSub')}</p>
                                 </div>
                                 <div className="filter-pills">
                                     {(['Day', 'Week', 'Month'] as const).map(filter => (
@@ -114,7 +150,7 @@ export default function Dashboard() {
                                             onClick={() => setActivityFilter(filter)}
                                             className={`filter-btn ${activityFilter === filter ? 'active' : ''}`}
                                         >
-                                            {filter}
+                                            {getFilterLabel(filter)}
                                         </button>
                                     ))}
                                 </div>
@@ -143,14 +179,16 @@ export default function Dashboard() {
                         <div className="card-panel">
                             <div className="card-header">
                                 <div>
-                                    <h2 className="card-title">Weight <span className="text-primary">Progress</span></h2>
+                                    <h2 className="card-title">
+                                        {t('dashboard.weightProgressTitle')} <span className="text-primary">{t('dashboard.weightProgressHighlight')}</span>
+                                    </h2>
                                     <div className="goal-status" style={{ color: goalType === 'Lose' ? theme.accents.emerald : 'var(--primary)' }}>
                                         {goalType === 'Lose' ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
-                                        <span>Goal: {targetWeight} kg</span>
+                                        <span>{t('dashboard.goalWeight', { val: targetWeight })}</span>
                                     </div>
                                 </div>
                                 <button className="btn-secondary" onClick={() => setGoalModalOpen(true)}>
-                                    <Edit2 size={14} /> Adjust Goal
+                                    <Edit2 size={14} /> {t('dashboard.adjustGoal')}
                                 </button>
                             </div>
 
@@ -184,50 +222,14 @@ export default function Dashboard() {
 
                     </div>
 
-                    {/* Body Schema Panel */}
+                    {/* Body Muscle Interactive Panel */}
                     <div className="card-panel body-schema-panel">
-                        <div className="card-header" style={{ marginBottom: '2rem' }}>
-                            <h2 className="card-title">Body <span className="text-primary">Condition</span></h2>
-                            <div className="schema-icon"><Target size={18} /></div>
+                        <div className="card-header" style={{ width: '100%', justifyContent: 'center', textAlign: 'center', marginBottom: '1rem' }}>
+                            <h2 className="card-title" style={{ textAlign: 'center' }}>
+                                {t('dashboard.bodyConditionTitle')} <span className="text-primary">{t('dashboard.bodyConditionHighlight')}</span>
+                            </h2>
                         </div>
-
-                        <div className="schema-visual">
-                            <div className="schema-svg-wrap">
-                                <svg viewBox="0 0 100 250" className="schema-svg">
-                                    {/* Head */}
-                                    <circle cx="50" cy="25" r="15" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" />
-                                    <circle cx="50" cy="25" r="15" fill="none" stroke="var(--primary)" strokeWidth="3" strokeDasharray="40 100" strokeDashoffset="20" />
-                                    {/* Torso */}
-                                    <path d="M 35 50 Q 50 45 65 50 L 70 110 Q 50 120 30 110 Z" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" />
-                                    <path d="M 35 50 Q 50 45 65 50 L 70 110 Q 50 120 30 110 Z" fill="none" stroke={theme.accents.rose} strokeWidth="3" strokeDasharray="80 200" strokeDashoffset="0" opacity="0.8" />
-                                    {/* Arms */}
-                                    <path d="M 35 50 Q 15 70 20 120" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" strokeLinecap="round" />
-                                    <path d="M 65 50 Q 85 70 80 120" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" strokeLinecap="round" />
-                                    <path d="M 65 50 Q 85 70 80 120" fill="none" stroke={theme.accents.emerald} strokeWidth="3" strokeLinecap="round" strokeDasharray="30 100" strokeDashoffset="10" opacity="0.8" />
-                                    {/* Legs */}
-                                    <path d="M 40 115 L 35 180 L 30 230" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M 60 115 L 65 180 L 70 230" fill="none" stroke="var(--svg-stroke)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M 40 115 L 35 180 L 30 230" fill="none" stroke={theme.accents.amber} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="50 150" strokeDashoffset="20" opacity="0.8" />
-                                </svg>
-
-                                {/* Condition Markers */}
-                                <ConditionMarker top="10%" left="80%" color="var(--primary)" label="Mind" value="Focus" />
-                                <ConditionMarker top="35%" left="-15%" color={theme.accents.rose} label="Core" value="Fatigued" />
-                                <ConditionMarker top="40%" left="100%" color={theme.accents.emerald} label="Arms" value="Recovered" />
-                                <ConditionMarker top="75%" left="5%" color={theme.accents.amber} label="Legs" value="Sore" />
-                            </div>
-                        </div>
-
-                        <div className="schema-stats">
-                            <div className="schema-stat-box">
-                                <p className="schema-stat-label">Muscle Mass</p>
-                                <p className="schema-stat-value">42.5 <span className="schema-stat-unit">kg</span></p>
-                            </div>
-                            <div className="schema-stat-box">
-                                <p className="schema-stat-label">Body Fat</p>
-                                <p className="schema-stat-value">14.2 <span className="schema-stat-unit">%</span></p>
-                            </div>
-                        </div>
+                        <FullBodyMuscles />
                     </div>
                 </div>
             </main>
@@ -237,24 +239,30 @@ export default function Dashboard() {
                 <div className="modal-backdrop">
                     <div className="modal-content">
                         <button className="modal-close" onClick={() => setGoalModalOpen(false)}><X size={20} /></button>
-                        <h3 className="modal-title">Adjust <span className="text-primary">Goal</span></h3>
+                        <h3 className="modal-title">
+                            {t('dashboard.adjustGoal')}
+                        </h3>
 
                         <div className="form-group">
-                            <label className="form-label">Goal Type</label>
+                            <label className="form-label">{t('dashboard.goalType')}</label>
                             <div className="goal-toggle-grid">
                                 <button
                                     className={`goal-toggle-btn ${goalType === 'Lose' ? 'active-lose' : ''}`}
                                     onClick={() => setGoalType('Lose')}
-                                >Lose Weight</button>
+                                >
+                                    {t('dashboard.loseWeight')}
+                                </button>
                                 <button
                                     className={`goal-toggle-btn ${goalType === 'Gain' ? 'active-gain' : ''}`}
                                     onClick={() => setGoalType('Gain')}
-                                >Gain Weight</button>
+                                >
+                                    {t('dashboard.gainWeight')}
+                                </button>
                             </div>
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Target Weight (kg)</label>
+                            <label className="form-label">{t('dashboard.targetWeight')}</label>
                             <input
                                 type="number"
                                 className="form-input"
@@ -264,7 +272,7 @@ export default function Dashboard() {
                         </div>
 
                         <button className="btn-primary" onClick={() => setGoalModalOpen(false)}>
-                            Save Changes
+                            {t('dashboard.saveChanges')}
                         </button>
                     </div>
                 </div>
@@ -273,10 +281,10 @@ export default function Dashboard() {
             {/* Mobile Bottom Nav */}
             <nav className="mobile-nav">
                 <div className="mobile-nav-inner">
-                    <MobileNavItem icon={<Home size={24} />} label="Home" active />
-                    <MobileNavItem icon={<BarChart2 size={24} />} label="Stats" />
-                    <MobileNavItem icon={<Activity size={24} />} label="Workout" />
-                    <MobileNavItem icon={<User size={24} />} label="Profile" />
+                    <MobileNavItem icon={<Home size={24} />} label={t('nav.home')} active />
+                    <MobileNavItem icon={<BarChart2 size={24} />} label={t('nav.dashboard')} />
+                    <MobileNavItem icon={<Activity size={24} />} label={t('nav.exercise')} />
+                    <MobileNavItem icon={<User size={24} />} label={t('nav.profile')} />
                 </div>
             </nav>
         </div>
@@ -302,29 +310,6 @@ function StatCard({ icon, label, value, subValue, bg }: StatCardProps) {
             <div>
                 <div className="stat-value">{value}</div>
                 <div className="stat-subval">{subValue}</div>
-            </div>
-        </div>
-    );
-}
-
-interface ConditionMarkerProps {
-    top: string;
-    left: string;
-    color: string;
-    label: string;
-    value: string;
-}
-
-function ConditionMarker({ top, left, color, label, value }: ConditionMarkerProps) {
-    return (
-        <div className="marker-wrapper" style={{ top, left }}>
-            <div className="marker-dot-wrap">
-                <span className="marker-ping" style={{ backgroundColor: color }}></span>
-                <span className="marker-dot" style={{ backgroundColor: color }}></span>
-            </div>
-            <div className="marker-tooltip">
-                <span className="marker-label">{label}</span>
-                <span className="marker-value">{value}</span>
             </div>
         </div>
     );
