@@ -1,8 +1,11 @@
 /* Header Component Layout Styles */
 header {
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 30;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 100;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--nav-bg);
     -webkit-backdrop-filter: blur(12px);

@@ -7,6 +7,19 @@ export interface User {
   role: 'admin' | 'user';
   isVerified?: boolean;
   avatarUrl?: string;
+  wallpaperUrl?: string;
+  bio?: string;
+  fitnessGoal?: string;
+  targetWeight?: number;
+  currentWeight?: number;
+  height?: number;
+  gender?: string;
+  phone?: string;
+  age?: number;
+  experienceLevel?: string;
+  workoutSplit?: string;
+  bodyFat?: number;
+  rhr?: number;
   createdAt?: string;
 }
 

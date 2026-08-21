@@ -8,6 +8,7 @@ from sqlalchemy import text
 from config import Config
 from models import db
 from routes.auth import auth_bp
+from routes.user import user_bp
 
 def ensure_mysql_db_exists(config_obj):
     """Ensure the target MySQL database exists before Flask SQLAlchemy connects to it."""
@@ -41,7 +42,20 @@ def upgrade_schema_if_needed(app):
             ("otp_purpose", "VARCHAR(30) NULL"),
             ("google_id", "VARCHAR(255) NULL UNIQUE"),
             ("apple_id", "VARCHAR(255) NULL UNIQUE"),
-            ("avatar_url", "VARCHAR(500) NULL")
+            ("avatar_url", "VARCHAR(500) NULL"),
+            ("wallpaper_url", "VARCHAR(500) NULL"),
+            ("bio", "VARCHAR(255) NULL"),
+            ("fitness_goal", "VARCHAR(100) NULL"),
+            ("target_weight", "FLOAT NULL"),
+            ("current_weight", "FLOAT NULL"),
+            ("height", "FLOAT NULL"),
+            ("gender", "VARCHAR(20) NULL"),
+            ("phone", "VARCHAR(50) NULL"),
+            ("age", "INT NULL"),
+            ("experience_level", "VARCHAR(50) NULL"),
+            ("workout_split", "VARCHAR(50) NULL"),
+            ("body_fat", "FLOAT NULL"),
+            ("rhr", "INT NULL")
         ]
 
         engine_name = db.engine.name
@@ -77,6 +91,7 @@ def create_app():
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(user_bp)
 
     @app.route('/api/health', methods=['GET'])
     def health():

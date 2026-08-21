@@ -6,7 +6,7 @@
   color: var(--text-main);
   font-family: 'Barlow', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-x: hidden;
+  overflow-x: clip;
   padding-bottom: 0 !important;
 }
 
@@ -16,12 +16,19 @@
   background-color: var(--bg-main);
 }
 
+.home-app-wrapper main {
+  padding: 0;
+}
+
 /* ==========================================================================
    NAVIGATION BAR
    ========================================================================== */
 .home-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 100;
   background-color: var(--nav-bg);
   -webkit-backdrop-filter: blur(16px);
@@ -198,6 +205,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -218,14 +226,14 @@
    ========================================================================== */
 .home-hero {
   position: relative;
-  padding: 4rem 1.5rem 6rem;
+  padding: 6rem 1.5rem 6rem;
   text-align: center;
   overflow: hidden;
 }
 
 @media (min-width: 768px) {
   .home-hero {
-    padding: 6rem 1.5rem 8rem;
+    padding: 7rem 1.5rem 8rem;
   }
 }
 
@@ -441,9 +449,18 @@
   height: 0.75rem;
   border-radius: 50%;
 }
-.home-dot-red { background-color: #f43f5e; }
-.home-dot-yellow { background-color: #f59e0b; }
-.home-dot-green { background-color: #10b981; }
+
+.home-dot-red {
+  background-color: #f43f5e;
+}
+
+.home-dot-yellow {
+  background-color: #f59e0b;
+}
+
+.home-dot-green {
+  background-color: #10b981;
+}
 
 .home-mockup-url {
   margin: 0 auto;
@@ -606,6 +623,7 @@
   .home-deepdive-row {
     flex-direction: row;
   }
+
   .home-deepdive-row.reverse {
     flex-direction: row-reverse;
   }
@@ -826,6 +844,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -1068,4 +1087,3 @@
   align-items: center;
   gap: 1rem;
 }
-

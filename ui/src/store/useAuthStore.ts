@@ -9,6 +9,7 @@ interface AuthState {
   isInitializing: boolean;
   setAuth: (user: User, token: string) => void;
   login: (user: User, token?: string) => void;
+  updateUser: (user: User) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -53,6 +54,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: true,
       isInitializing: false,
     });
+  },
+
+  updateUser: (userData) => {
+    localStorage.setItem('gym_auth_user', JSON.stringify(userData));
+    set({ user: userData });
   },
 
   logout: () => {

@@ -22,4 +22,10 @@ class Config:
         'DATABASE_URL',
         f"mysql+pymysql://{encoded_user}:{encoded_password}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}?charset=utf8mb4"
     )
+    # Cloudinary Cloud Storage secrets
+    CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME', '').strip()
+    CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY', '').strip()
+    CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET', '').strip()
+    CLOUDINARY_UPLOAD_PRESET = os.getenv('CLOUDINARY_UPLOAD_PRESET', '').strip()
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -8,6 +8,7 @@ import { LanguageProvider } from '../context/LanguageContext';
 import Home from '../pages/home/Home';
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashbroad/Dashbroad';
+import Profile from '../pages/profile/Profile';
 import ForgotPassword from '../pages/forgotpassword/ForgotPassword';
 import ResetPassword from '../pages/resetpassword/ResetPassword';
 import Register from '../pages/register/Register';
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
           {
             path: PATHS.DASHBOARD,
             element: <Dashboard />,
+          },
+          {
+            path: PATHS.PROFILE,
+            element: <Profile />,
           },
         ],
       },

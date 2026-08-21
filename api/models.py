@@ -19,6 +19,19 @@ class User(db.Model):
     google_id = db.Column(db.String(255), unique=True, nullable=True)
     apple_id = db.Column(db.String(255), unique=True, nullable=True)
     avatar_url = db.Column(db.String(500), nullable=True)
+    wallpaper_url = db.Column(db.String(500), nullable=True)
+    bio = db.Column(db.String(255), nullable=True)
+    fitness_goal = db.Column(db.String(100), nullable=True, default='Lose Weight')
+    target_weight = db.Column(db.Float, nullable=True)
+    current_weight = db.Column(db.Float, nullable=True)
+    height = db.Column(db.Float, nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
+    phone = db.Column(db.String(50), nullable=True)
+    age = db.Column(db.Integer, nullable=True, default=25)
+    experience_level = db.Column(db.String(50), nullable=True, default='Intermediate (2-3 yrs)')
+    workout_split = db.Column(db.String(50), nullable=True, default='Push / Pull / Legs')
+    body_fat = db.Column(db.Float, nullable=True, default=14.5)
+    rhr = db.Column(db.Integer, nullable=True, default=58)
     reset_token = db.Column(db.String(255), nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -49,5 +62,18 @@ class User(db.Model):
             'role': self.role,
             'isVerified': self.is_verified,
             'avatarUrl': self.avatar_url,
+            'wallpaperUrl': self.wallpaper_url,
+            'bio': self.bio,
+            'fitnessGoal': self.fitness_goal,
+            'targetWeight': self.target_weight,
+            'currentWeight': self.current_weight,
+            'height': self.height,
+            'gender': self.gender,
+            'phone': self.phone,
+            'age': self.age,
+            'experienceLevel': self.experience_level,
+            'workoutSplit': self.workout_split,
+            'bodyFat': self.body_fat,
+            'rhr': self.rhr,
             'createdAt': created_at_iso
         }

@@ -106,13 +106,13 @@ export default function Header({
                     </button>
 
                     {profileOpen && (
-                        <div className="dropdown-menu">
-                            <div className="dropdown-header">
+                        <div className="dropdown-menu" onMouseLeave={() => setProfileOpen(false)}>
+                            <div className="dropdown-header" onClick={() => { setProfileOpen(false); navigate(PATHS.PROFILE); }} style={{ cursor: 'pointer' }}>
                                 <p className="dropdown-name">{user?.name || 'Jane Doe'}</p>
                                 <p className="dropdown-email">{user?.email || 'jane@example.com'}</p>
                             </div>
                             <div className="dropdown-divider"></div>
-                            <button className="dropdown-item">
+                            <button className="dropdown-item" onClick={() => { setProfileOpen(false); navigate(PATHS.PROFILE); }}>
                                 <User size={16} /> {t('nav.profile')}
                             </button>
                             <button className="dropdown-item">

@@ -7,9 +7,6 @@ import {
     Flame,
     TrendingDown,
     TrendingUp,
-    Home,
-    BarChart2,
-    User,
     Edit2,
     X
 } from 'lucide-react';
@@ -25,6 +22,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import Header from '../../components/layout/Header';
+import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
@@ -81,7 +79,7 @@ export default function Dashboard() {
 
     return (
         <div
-            className={`app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
+            className={`app-wrapper dashboard-app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
             style={getThemeStyles(isDarkTheme)}
         >
             <Header isDarkTheme={isDarkTheme} onToggleTheme={handleToggleTheme} />
@@ -95,7 +93,6 @@ export default function Dashboard() {
                             {language === 'vi' ? 'Thứ Năm, 24 Tháng 10' : 'Thursday, October 24'}
                         </p>
                     </div>
-                    <button className="share-btn">{t('dashboard.shareStats')}</button>
                 </div>
 
                 {/* Stats Grid */}
@@ -279,14 +276,7 @@ export default function Dashboard() {
             )}
 
             {/* Mobile Bottom Nav */}
-            <nav className="mobile-nav">
-                <div className="mobile-nav-inner">
-                    <MobileNavItem icon={<Home size={24} />} label={t('nav.home')} active />
-                    <MobileNavItem icon={<BarChart2 size={24} />} label={t('nav.dashboard')} />
-                    <MobileNavItem icon={<Activity size={24} />} label={t('nav.exercise')} />
-                    <MobileNavItem icon={<User size={24} />} label={t('nav.profile')} />
-                </div>
-            </nav>
+            <MobileNav activeNav="dashboard" />
         </div>
     );
 }
@@ -312,20 +302,5 @@ function StatCard({ icon, label, value, subValue, bg }: StatCardProps) {
                 <div className="stat-subval">{subValue}</div>
             </div>
         </div>
-    );
-}
-
-interface MobileNavItemProps {
-    icon: React.ReactNode;
-    label: string;
-    active?: boolean;
-}
-
-function MobileNavItem({ icon, label, active = false }: MobileNavItemProps) {
-    return (
-        <button className={`mobile-nav-item ${active ? 'active' : ''}`}>
-            {icon}
-            <span className="mobile-nav-label">{label}</span>
-        </button>
     );
 }
