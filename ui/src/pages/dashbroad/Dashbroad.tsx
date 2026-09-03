@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Dashbroad.css';
 import {
     Heart,
@@ -26,24 +26,25 @@ import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
+import { userService, type ActivityItem, type WeightItem } from '../../services/userService';
 
-// Mock Data
-const activityDataDay = [
-    { time: '6AM', cal: 50 }, { time: '9AM', cal: 120 }, { time: '12PM', cal: 80 },
-    { time: '3PM', cal: 250 }, { time: '6PM', cal: 350 }, { time: '9PM', cal: 100 },
+// Temp / Fallback Data
+const tempActivityDataDay: ActivityItem[] = [
+    { time: '6AM', cal: 0 }, { time: '9AM', cal: 0 }, { time: '12PM', cal: 0 },
+    { time: '3PM', cal: 0 }, { time: '6PM', cal: 0 }, { time: '9PM', cal: 0 },
 ];
-const activityDataWeek = [
-    { time: 'Mon', cal: 450 }, { time: 'Tue', cal: 520 }, { time: 'Wed', cal: 380 },
-    { time: 'Thu', cal: 600 }, { time: 'Fri', cal: 410 }, { time: 'Sat', cal: 800 }, { time: 'Sun', cal: 300 },
+const tempActivityDataWeek: ActivityItem[] = [
+    { time: 'Mon', cal: 0 }, { time: 'Tue', cal: 0 }, { time: 'Wed', cal: 0 },
+    { time: 'Thu', cal: 0 }, { time: 'Fri', cal: 0 }, { time: 'Sat', cal: 0 }, { time: 'Sun', cal: 0 },
 ];
-const activityDataMonth = [
-    { time: 'W1', cal: 2800 }, { time: 'W2', cal: 3100 }, { time: 'W3', cal: 2950 }, { time: 'W4', cal: 3400 },
+const tempActivityDataMonth: ActivityItem[] = [
+    { time: 'W1', cal: 0 }, { time: 'W2', cal: 0 }, { time: 'W3', cal: 0 }, { time: 'W4', cal: 0 },
 ];
 
-const weightDataMonth = [
-    { month: 'Jan', weight: 60 }, { month: 'Feb', weight: 59.2 }, { month: 'Mar', weight: 58.5 },
-    { month: 'Apr', weight: 58.0 }, { month: 'May', weight: 57.1 }, { month: 'Jun', weight: 56.5 },
-    { month: 'Jul', weight: 56.0 },
+const tempWeightDataMonth: WeightItem[] = [
+    { month: 'Jan', weight: 0 }, { month: 'Feb', weight: 0 }, { month: 'Mar', weight: 0 },
+    { month: 'Apr', weight: 0 }, { month: 'May', weight: 0 }, { month: 'Jun', weight: 0 },
+    { month: 'Jul', weight: 0 },
 ];
 
 export default function Dashboard() {
@@ -56,6 +57,35 @@ export default function Dashboard() {
         const saved = localStorage.getItem('shwi_theme');
         return saved !== null ? saved === 'dark' : true;
     });
+
+    const [activityDataDay, setActivityDataDay] = useState<ActivityItem[]>(tempActivityDataDay);
+    const [activityDataWeek, setActivityDataWeek] = useState<ActivityItem[]>(tempActivityDataWeek);
+    const [activityDataMonth, setActivityDataMonth] = useState<ActivityItem[]>(tempActivityDataMonth);
+    const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(tempWeightDataMonth);
+
+    useEffect(() => {
+        let isMounted = true;
+        userService.getDashboardData()
+            .then(data => {
+                if (!isMounted) return;
+                setActivityDataDay(data.activityDataDay && data.activityDataDay.length > 0 ? data.activityDataDay : tempActivityDataDay);
+                setActivityDataWeek(data.activityDataWeek && data.activityDataWeek.length > 0 ? data.activityDataWeek : tempActivityDataWeek);
+                setActivityDataMonth(data.activityDataMonth && data.activityDataMonth.length > 0 ? data.activityDataMonth : tempActivityDataMonth);
+                setWeightDataMonth(data.weightDataMonth && data.weightDataMonth.length > 0 ? data.weightDataMonth : tempWeightDataMonth);
+            })
+            .catch(err => {
+                console.error("Failed to fetch dashboard data from API:", err);
+                if (!isMounted) return;
+                setActivityDataDay(tempActivityDataDay);
+                setActivityDataWeek(tempActivityDataWeek);
+                setActivityDataMonth(tempActivityDataMonth);
+                setWeightDataMonth(tempWeightDataMonth);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleToggleTheme = () => {
         setIsDarkTheme((prev) => {
@@ -77,6 +107,10 @@ export default function Dashboard() {
         return t('dashboard.month');
     };
 
+    const currentDate = language === 'vi'
+        ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
+        : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
     return (
         <div
             className={`app-wrapper dashboard-app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
@@ -90,7 +124,7 @@ export default function Dashboard() {
                     <div>
                         <h1 className="page-title">{t('dashboard.overview')}</h1>
                         <p className="page-date">
-                            {language === 'vi' ? 'Thứ Năm, 24 Tháng 10' : 'Thursday, October 24'}
+                            {currentDate}
                         </p>
                     </div>
                 </div>
@@ -120,9 +154,9 @@ export default function Dashboard() {
                     />
                     <StatCard
                         icon={<Flame color={theme.accents.orange} />}
-                        label={t('dashboard.activeTime')}
-                        value="1 h 49 m"
-                        subValue={t('dashboard.calories', { val: '640 kcal' })}
+                        label={t('dashboard.caloriesBurned')}
+                        value="2640 kcal"
+                        subValue={t('dashboard.caloriesIn', { val: '2400 Kcal' })}
                         bg={theme.accents.orangeBg}
                     />
                 </div>

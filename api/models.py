@@ -77,3 +77,37 @@ class User(db.Model):
             'rhr': self.rhr,
             'createdAt': created_at_iso
         }
+
+
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_logs'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    period = db.Column(db.String(20), nullable=False)  # 'day', 'week', 'month'
+    time_label = db.Column(db.String(50), nullable=False)  # e.g. '6AM', 'Mon', 'W1'
+    calories = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            'time': self.time_label,
+            'cal': self.calories
+        }
+
+
+class WeightLog(db.Model):
+    __tablename__ = 'weight_logs'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    month_label = db.Column(db.String(50), nullable=False)  # e.g. 'Jan', 'Feb', 'Mar'
+    weight = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            'month': self.month_label,
+            'weight': self.weight
+        }
+
