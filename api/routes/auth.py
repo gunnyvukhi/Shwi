@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, current_app
 
-from models import db, User
+from models import db, User, UserInfo
 from utils import generate_jwt_token, generate_reset_token, token_required
 from email_service import generate_otp, send_otp_email
 

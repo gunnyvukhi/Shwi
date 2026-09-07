@@ -9,27 +9,18 @@ import { userService } from '../../services/userService';
 import {
   Camera,
   Edit2,
-  Calendar,
-  Mail,
   Shield,
   User as UserIcon,
-  Award,
   Activity,
   Target,
   Scale,
   Ruler,
-  Phone,
   X,
   CheckCircle2,
   AlertCircle,
-  Flame,
   Trophy,
   Dumbbell,
-  Clock,
-  ChevronRight,
-  Heart,
-  Zap,
-  Check
+  ChevronRight
 } from 'lucide-react';
 
 export default function Profile() {
@@ -134,8 +125,8 @@ export default function Profile() {
   const bmiVal = (currentW / ((currentH / 100) * (currentH / 100))).toFixed(1);
   const bmiCategory =
     Number(bmiVal) < 18.5 ? 'Underweight' :
-    Number(bmiVal) < 25 ? 'Normal Weight' :
-    Number(bmiVal) < 30 ? 'Overweight' : 'Obese';
+      Number(bmiVal) < 25 ? 'Normal Weight' :
+        Number(bmiVal) < 30 ? 'Overweight' : 'Obese';
 
   // BMR Estimate (Mifflin-St Jeor formula)
   const bmrEst = Math.round(10 * currentW + 6.25 * currentH - 5 * formData.age + (formData.gender === 'Male' ? 5 : -161));

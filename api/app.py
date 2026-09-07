@@ -3,7 +3,7 @@ import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 import pymysql
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 
 from config import Config
 from models import db
@@ -31,8 +31,9 @@ def ensure_mysql_db_exists(config_obj):
         return False
 
 def upgrade_schema_if_needed(app):
-    """Dynamically add missing columns to the existing users table."""
+    """Dynamically add missing columns and migrate profile data to user_info."""
     with app.app_context():
+        # Creates all newly defined tables: user_info, heart_rate_logs, sleep_logs, step_logs, workout_logs, food_intake_logs
         db.create_all()
         
         columns_to_add = [
@@ -42,20 +43,8 @@ def upgrade_schema_if_needed(app):
             ("otp_purpose", "VARCHAR(30) NULL"),
             ("google_id", "VARCHAR(255) NULL UNIQUE"),
             ("apple_id", "VARCHAR(255) NULL UNIQUE"),
-            ("avatar_url", "VARCHAR(500) NULL"),
-            ("wallpaper_url", "VARCHAR(500) NULL"),
-            ("bio", "VARCHAR(255) NULL"),
-            ("fitness_goal", "VARCHAR(100) NULL"),
-            ("target_weight", "FLOAT NULL"),
-            ("current_weight", "FLOAT NULL"),
-            ("height", "FLOAT NULL"),
-            ("gender", "VARCHAR(20) NULL"),
-            ("phone", "VARCHAR(50) NULL"),
-            ("age", "INT NULL"),
-            ("experience_level", "VARCHAR(50) NULL"),
-            ("workout_split", "VARCHAR(50) NULL"),
-            ("body_fat", "FLOAT NULL"),
-            ("rhr", "INT NULL")
+            ("reset_token", "VARCHAR(255) NULL"),
+            ("reset_token_expiry", "DATETIME NULL")
         ]
 
         engine_name = db.engine.name
@@ -71,6 +60,55 @@ def upgrade_schema_if_needed(app):
                 except Exception:
                     # Column already exists
                     pass
+
+            if engine_name != 'sqlite':
+                try:
+                    conn.execute(text("ALTER TABLE users MODIFY COLUMN `name` VARCHAR(100) NULL DEFAULT '';"))
+                    conn.commit()
+                except Exception:
+                    pass
+
+            # Migrate existing users' profile info to user_info table if missing
+            try:
+                inspector = inspect(db.engine)
+                user_cols = [c['name'] for c in inspector.get_columns('users')]
+                
+                users_missing_info = conn.execute(text(
+                    "SELECT u.id FROM users u LEFT JOIN user_info ui ON u.id = ui.user_id WHERE ui.id IS NULL"
+                )).fetchall()
+
+                for row in users_missing_info:
+                    uid = row[0]
+                    profile_cols = [
+                        'name', 'avatar_url', 'wallpaper_url', 'bio', 'fitness_goal',
+                        'target_weight', 'current_weight', 'height', 'gender', 'phone',
+                        'age', 'experience_level', 'workout_split', 'body_fat', 'rhr'
+                    ]
+                    available_cols = [c for c in profile_cols if c in user_cols]
+
+                    if available_cols:
+                        cols_str = ", ".join([f"`{c}`" if engine_name != 'sqlite' else c for c in available_cols])
+                        row_data = conn.execute(
+                            text(f"SELECT {cols_str} FROM users WHERE id = :uid"),
+                            {"uid": uid}
+                        ).mappings().first()
+                        
+                        if row_data:
+                            data_dict = dict(row_data)
+                            ins_cols = ['user_id'] + list(data_dict.keys())
+                            ins_placeholders = [':user_id'] + [f":{k}" for k in data_dict.keys()]
+                            ins_cols_str = ", ".join([f"`{c}`" if engine_name != 'sqlite' else c for c in ins_cols])
+                            ins_vals_str = ", ".join(ins_placeholders)
+                            data_dict['user_id'] = uid
+                            conn.execute(text(f"INSERT INTO user_info ({ins_cols_str}) VALUES ({ins_vals_str})"), data_dict)
+                    else:
+                        conn.execute(text("INSERT INTO user_info (user_id, name) VALUES (:uid, 'Member')"), {"uid": uid})
+
+                conn.commit()
+                if users_missing_info:
+                    print(f"[DB Schema Upgrade] Migrated profile data for {len(users_missing_info)} user(s) into user_info table.")
+            except Exception as e:
+                print(f"[DB Schema Upgrade Notice] Profile migration note: {e}")
 
 def create_app():
     app = Flask(__name__)

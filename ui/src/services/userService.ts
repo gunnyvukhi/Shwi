@@ -1,6 +1,6 @@
 import type { User } from './authService';
 
-const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/user` : 'http://localhost:5000/api/user';
+const API_BASE = `${import.meta.env.VITE_API_URL}/user`;
 
 export interface ActivityItem {
   time: string;
@@ -12,11 +12,73 @@ export interface WeightItem {
   weight: number;
 }
 
+export interface HeartRateItem {
+  id: number;
+  userId: string;
+  bpm: number;
+  restingBpm?: number | null;
+  status?: string;
+  timeLabel?: string;
+  recordedAt?: string;
+}
+
+export interface SleepItem {
+  id: number;
+  userId: string;
+  durationMinutes: number;
+  durationDisplay: string;
+  sleepQuality?: number;
+  deepSleepMinutes?: number;
+  remSleepMinutes?: number;
+  lightSleepMinutes?: number;
+  timeLabel?: string;
+}
+
+export interface StepItem {
+  id: number;
+  userId: string;
+  steps: number;
+  targetSteps: number;
+  distanceKm?: number;
+  caloriesBurned?: number;
+  period: string;
+  timeLabel: string;
+}
+
+export interface WorkoutItem {
+  id: number;
+  userId: string;
+  workoutName: string;
+  durationMinutes: number;
+  caloriesBurned: number;
+  muscleGroup?: string;
+  intensity?: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface FoodIntakeItem {
+  id: number;
+  userId: string;
+  mealType: string;
+  foodName: string;
+  calories: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  createdAt?: string;
+}
+
 export interface DashboardData {
   activityDataDay: ActivityItem[];
   activityDataWeek: ActivityItem[];
   activityDataMonth: ActivityItem[];
   weightDataMonth: WeightItem[];
+  heartRateLogs?: HeartRateItem[];
+  sleepLogs?: SleepItem[];
+  stepLogs?: StepItem[];
+  workoutLogs?: WorkoutItem[];
+  foodIntakeLogs?: FoodIntakeItem[];
 }
 
 export const userService = {
@@ -90,5 +152,44 @@ export const userService = {
       throw new Error(data.error || 'Failed to fetch dashboard data');
     }
     return data;
+  },
+
+  async getHeartRateLogs(): Promise<HeartRateItem[]> {
+    const token = localStorage.getItem('gym_auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/heart-rate`, {
+      method: 'GET',
+      headers,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to fetch heart rate logs');
+    }
+    return data.heartRateLogs || [];
+  },
+
+  async addHeartRateLog(payload: { bpm: number; restingBpm?: number; status?: string; timeLabel?: string }): Promise<HeartRateItem> {
+    const token = localStorage.getItem('gym_auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/heart-rate`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to log heart rate');
+    }
+    return data.log;
   }
 };

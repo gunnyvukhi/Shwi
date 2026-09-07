@@ -1,36 +1,37 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/DB_PASSWORD
+      MYSQL_USER: root
       MYSQL_DATABASE: shwi_db
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql/data
+    secrets:
+      - DB_PASSWORD
 
   api:
     build: ./api
     restart: always
+    env_file:
+      - ./api/.env
     environment:
       - MYSQL_HOST=db
-      - MYSQL_PORT=3306
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=root_password
-      - MYSQL_DB=shwi_db
-      # You can add other variables from your .env here
-      # - SECRET_KEY=your_secret_key
     ports:
       - "5000:5000"
     depends_on:
       - db
+    volumes:
+      - logs:/app/logs
 
   ui:
     build: ./ui
     restart: always
+    env_file:
+      - ./ui/.env
     ports:
       - "80:80"
     depends_on:
@@ -38,3 +39,8 @@ services:
 
 volumes:
   mysql_data:
+  logs:
+
+secrets:
+  DB_PASSWORD:
+    file: ./DB_PASSWORD.txt

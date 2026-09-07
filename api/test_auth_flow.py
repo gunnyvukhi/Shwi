@@ -33,16 +33,32 @@ def make_request(url, method="GET", data=None, headers=None):
 
 if __name__ == "__main__":
     from app import create_app
-    from models import db, User
+    from models import (
+        db, User, UserInfo, ActivityLog, WeightLog,
+        HeartRateLog, SleepLog, StepLog, WorkoutLog, FoodIntakeLog
+    )
     app = create_app()
 
-    with app.app_context():
-        # Clean test user if exists
-        test_email = "test_otp_user@gym.com"
-        existing = User.query.filter_by(email=test_email).first()
-        if existing:
-            db.session.delete(existing)
+    def cleanup_test_user(email):
+        u = User.query.filter_by(email=email).first()
+        if u:
+            ActivityLog.query.filter_by(user_id=u.id).delete()
+            WeightLog.query.filter_by(user_id=u.id).delete()
+            HeartRateLog.query.filter_by(user_id=u.id).delete()
+            SleepLog.query.filter_by(user_id=u.id).delete()
+            StepLog.query.filter_by(user_id=u.id).delete()
+            WorkoutLog.query.filter_by(user_id=u.id).delete()
+            FoodIntakeLog.query.filter_by(user_id=u.id).delete()
+            UserInfo.query.filter_by(user_id=u.id).delete()
+            db.session.delete(u)
             db.session.commit()
+
+    with app.app_context():
+        # Clean test users if exist
+        test_email = "test_otp_user@gym.com"
+        cleanup_test_user(test_email)
+        cleanup_test_user("google_user@gym.com")
+        cleanup_test_user("apple_user@gym.com")
 
         # 1. Test register -> OTP generated
         print("1. Registering user...")

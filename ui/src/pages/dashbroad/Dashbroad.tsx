@@ -8,7 +8,8 @@ import {
     TrendingDown,
     TrendingUp,
     Edit2,
-    X
+    X,
+    Clock
 } from 'lucide-react';
 import {
     LineChart,
@@ -26,7 +27,16 @@ import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
-import { userService, type ActivityItem, type WeightItem } from '../../services/userService';
+import {
+    userService,
+    type ActivityItem,
+    type WeightItem,
+    type HeartRateItem,
+    type SleepItem,
+    type StepItem,
+    type WorkoutItem,
+    type FoodIntakeItem
+} from '../../services/userService';
 
 // Temp / Fallback Data
 const tempActivityDataDay: ActivityItem[] = [
@@ -47,6 +57,14 @@ const tempWeightDataMonth: WeightItem[] = [
     { month: 'Jul', weight: 0 },
 ];
 
+const defaultHeartRateLogs: HeartRateItem[] = [
+    { id: 1, userId: '1', bpm: 117, restingBpm: 62, status: 'Peak', timeLabel: '07:15 PM' },
+    { id: 2, userId: '1', bpm: 135, restingBpm: 62, status: 'Cardio', timeLabel: '05:45 PM' },
+    { id: 3, userId: '1', bpm: 82, restingBpm: 62, status: 'Normal', timeLabel: '02:15 PM' },
+    { id: 4, userId: '1', bpm: 74, restingBpm: 62, status: 'Normal', timeLabel: '11:00 AM' },
+    { id: 5, userId: '1', bpm: 62, restingBpm: 62, status: 'Resting', timeLabel: '08:30 AM' },
+];
+
 export default function Dashboard() {
     const { t, language } = useLanguage();
     const [activityFilter, setActivityFilter] = useState<'Day' | 'Week' | 'Month'>('Day');
@@ -63,6 +81,13 @@ export default function Dashboard() {
     const [activityDataMonth, setActivityDataMonth] = useState<ActivityItem[]>(tempActivityDataMonth);
     const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(tempWeightDataMonth);
 
+    // Specialized Health & Fitness States from DB
+    const [heartRateLogs, setHeartRateLogs] = useState<HeartRateItem[]>(defaultHeartRateLogs);
+    const [sleepLogs, setSleepLogs] = useState<SleepItem[]>([]);
+    const [stepLogs, setStepLogs] = useState<StepItem[]>([]);
+    const [workoutLogs, setWorkoutLogs] = useState<WorkoutItem[]>([]);
+    const [foodIntakeLogs, setFoodIntakeLogs] = useState<FoodIntakeItem[]>([]);
+
     useEffect(() => {
         let isMounted = true;
         userService.getDashboardData()
@@ -72,6 +97,14 @@ export default function Dashboard() {
                 setActivityDataWeek(data.activityDataWeek && data.activityDataWeek.length > 0 ? data.activityDataWeek : tempActivityDataWeek);
                 setActivityDataMonth(data.activityDataMonth && data.activityDataMonth.length > 0 ? data.activityDataMonth : tempActivityDataMonth);
                 setWeightDataMonth(data.weightDataMonth && data.weightDataMonth.length > 0 ? data.weightDataMonth : tempWeightDataMonth);
+
+                if (data.heartRateLogs && data.heartRateLogs.length > 0) {
+                    setHeartRateLogs(data.heartRateLogs);
+                }
+                if (data.sleepLogs) setSleepLogs(data.sleepLogs);
+                if (data.stepLogs) setStepLogs(data.stepLogs);
+                if (data.workoutLogs) setWorkoutLogs(data.workoutLogs);
+                if (data.foodIntakeLogs) setFoodIntakeLogs(data.foodIntakeLogs);
             })
             .catch(err => {
                 console.error("Failed to fetch dashboard data from API:", err);
@@ -111,6 +144,48 @@ export default function Dashboard() {
         ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
         : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+    // Compute newest heart rate in the database, separating Normal and Resting
+    const latestHr: HeartRateItem | null = heartRateLogs.length > 0 ? heartRateLogs[0] : null;
+
+    let normalBpm = 78;
+    let restingBpm = 62;
+
+    const normalLog = heartRateLogs.find(log => log.status?.toLowerCase() === 'normal')
+        || heartRateLogs.find(log => log.status?.toLowerCase() !== 'resting');
+
+    const restingLog = heartRateLogs.find(log => log.status?.toLowerCase() === 'resting')
+        || heartRateLogs.find(log => log.restingBpm && log.restingBpm > 0);
+
+    if (normalLog) {
+        normalBpm = normalLog.bpm;
+    } else if (latestHr) {
+        normalBpm = latestHr.bpm;
+    }
+
+    if (restingLog) {
+        restingBpm = restingLog.status?.toLowerCase() === 'resting' ? restingLog.bpm : (restingLog.restingBpm || 62);
+    } else if (latestHr?.restingBpm) {
+        restingBpm = latestHr.restingBpm;
+    }
+
+    const newestTime = latestHr?.timeLabel || (latestHr?.recordedAt ? new Date(latestHr.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+
+    // Sleep, Step & Calorie derived stats
+    const latestSleep = sleepLogs.length > 0 ? sleepLogs[0] : null;
+    const displaySleepValue = latestSleep ? latestSleep.durationDisplay : "7 h 23 m";
+    const displaySleepQuality = latestSleep && latestSleep.sleepQuality ? `${latestSleep.sleepQuality}%` : "85%";
+
+    const latestStep = stepLogs.length > 0 ? stepLogs[0] : null;
+    const displayStepValue = latestStep ? latestStep.steps.toLocaleString() : "12,456";
+    const displayStepGoal = latestStep ? latestStep.targetSteps.toLocaleString() : "10,000";
+
+    const totalBurned = workoutLogs.length > 0
+        ? Math.round(workoutLogs.reduce((acc, w) => acc + w.caloriesBurned, 0) + 2100)
+        : 2640;
+    const totalIn = foodIntakeLogs.length > 0
+        ? Math.round(foodIntakeLogs.reduce((acc, f) => acc + f.calories, 0))
+        : 2400;
+
     return (
         <div
             className={`app-wrapper dashboard-app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
@@ -131,32 +206,61 @@ export default function Dashboard() {
 
                 {/* Stats Grid */}
                 <div className="stats-grid">
-                    <StatCard
-                        icon={<Heart color={theme.accents.rose} />}
-                        label={t('dashboard.heartRate')}
-                        value="117 bpm"
-                        subValue={t('dashboard.resting', { val: '62 bpm' })}
-                        bg={theme.accents.roseBg}
-                    />
+                    {/* Heart Rate Box (Newest in DB, Separated Normal & Resting) */}
+                    <div className="stat-card hr-stat-card">
+                        <div className="stat-header">
+                            <div className="stat-icon-wrap" style={{ backgroundColor: theme.accents.roseBg }}>
+                                <Heart color={theme.accents.rose} />
+                            </div>
+                            <div className="stat-label-wrap">
+                                <span className="stat-label">{t('dashboard.heartRate')}</span>
+                                <span className="hr-live-tag">
+                                    <span className="pulse-dot-mini" /> Live
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="hr-metrics-row">
+                            <div className="hr-metric-block">
+                                <span className="hr-type-label">{language === 'vi' ? 'Bình thường' : 'Normal'}</span>
+                                <div className="hr-val-text">
+                                    {normalBpm} <span className="stat-unit-text">bpm</span>
+                                </div>
+                            </div>
+                            <div className="hr-metric-divider" />
+                            <div className="hr-metric-block">
+                                <span className="hr-type-label">{language === 'vi' ? 'Khi nghỉ' : 'Resting'}</span>
+                                <div className="hr-val-text" style={{ color: theme.accents.emerald }}>
+                                    {restingBpm} <span className="stat-unit-text">bpm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="hr-timestamp">
+                            <Clock size={12} style={{ opacity: 0.7 }} />
+                            <span>{language === 'vi' ? 'Bản ghi mới nhất' : 'Newest reading'}: {newestTime || 'Recent'}</span>
+                        </div>
+                    </div>
+
                     <StatCard
                         icon={<Moon color={theme.accents.indigo} />}
                         label={t('dashboard.sleep')}
-                        value="7 h 23 m"
-                        subValue={t('dashboard.sleepQuality', { val: '85%' })}
+                        value={displaySleepValue}
+                        subValue={t('dashboard.sleepQuality', { val: displaySleepQuality })}
                         bg={theme.accents.indigoBg}
                     />
                     <StatCard
                         icon={<Activity color="var(--primary)" />}
                         label={t('dashboard.steps')}
-                        value="12,456"
-                        subValue={t('dashboard.stepGoal', { val: '10,000' })}
+                        value={displayStepValue}
+                        subValue={t('dashboard.stepGoal', { val: displayStepGoal })}
                         bg={theme.accents.skyBg}
                     />
                     <StatCard
                         icon={<Flame color={theme.accents.orange} />}
                         label={t('dashboard.caloriesBurned')}
-                        value="2640 kcal"
-                        subValue={t('dashboard.caloriesIn', { val: '2400 Kcal' })}
+                        value={`${totalBurned} kcal`}
+                        subValue={t('dashboard.caloriesIn', { val: `${totalIn} Kcal` })}
                         bg={theme.accents.orangeBg}
                     />
                 </div>

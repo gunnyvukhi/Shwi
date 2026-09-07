@@ -773,3 +773,103 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
+/* ==========================================
+   Heart Rate Box (Normal & Resting Split)
+   ========================================== */
+.hr-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-label-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.hr-live-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.675rem;
+    font-weight: 700;
+    color: #f43f5e;
+    background-color: rgba(244, 63, 94, 0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.pulse-dot-mini {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #f43f5e;
+    animation: pulse-dot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+    0% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6); }
+    70% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 5px rgba(244, 63, 94, 0); }
+    100% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+
+.hr-metrics-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.hr-metric-block {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.hr-type-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+}
+
+.hr-val-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    margin-bottom: 0;
+}
+
+.stat-unit-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: lowercase;
+}
+
+.hr-metric-divider {
+    width: 1px;
+    height: 2.2rem;
+    background-color: var(--border-color);
+}
+
+.hr-timestamp {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--chart-text);
+    margin-top: 0.2rem;
+}
