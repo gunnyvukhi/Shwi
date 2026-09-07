@@ -4,12 +4,11 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/DB_PASSWORD
-      MYSQL_USER: root
       MYSQL_DATABASE: shwi_db
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql/data
+      - mysql_data:/var/lib/mysql
     secrets:
       - DB_PASSWORD
 
