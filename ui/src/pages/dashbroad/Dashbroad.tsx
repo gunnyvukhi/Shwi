@@ -210,7 +210,7 @@ export default function Dashboard() {
                         icon={<Heart color={theme.accents.rose} />}
                         label={t('dashboard.heartRate')}
                         value={displayNormalBpm}
-                        subValue={t('dashboard.restingHeartRate', { val: displayRestingBpm })}
+                        subValue={t('dashboard.resting', { val: displayRestingBpm })}
                         bg={theme.accents.indigoBg}
                     />
 
