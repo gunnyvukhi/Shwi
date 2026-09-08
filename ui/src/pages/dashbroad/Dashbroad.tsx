@@ -9,7 +9,6 @@ import {
     TrendingUp,
     Edit2,
     X,
-    Clock
 } from 'lucide-react';
 import {
     LineChart,
@@ -168,7 +167,8 @@ export default function Dashboard() {
         restingBpm = latestHr.restingBpm;
     }
 
-    const newestTime = latestHr?.timeLabel || (latestHr?.recordedAt ? new Date(latestHr.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+    const displayNormalBpm = `${normalBpm} bpm`;
+    const displayRestingBpm = `${restingBpm} bpm`;
 
     // Sleep, Step & Calorie derived stats
     const latestSleep = sleepLogs.length > 0 ? sleepLogs[0] : null;
@@ -206,41 +206,13 @@ export default function Dashboard() {
 
                 {/* Stats Grid */}
                 <div className="stats-grid">
-                    {/* Heart Rate Box (Newest in DB, Separated Normal & Resting) */}
-                    <div className="stat-card hr-stat-card">
-                        <div className="stat-header">
-                            <div className="stat-icon-wrap" style={{ backgroundColor: theme.accents.roseBg }}>
-                                <Heart color={theme.accents.rose} />
-                            </div>
-                            <div className="stat-label-wrap">
-                                <span className="stat-label">{t('dashboard.heartRate')}</span>
-                                <span className="hr-live-tag">
-                                    <span className="pulse-dot-mini" /> Live
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="hr-metrics-row">
-                            <div className="hr-metric-block">
-                                <span className="hr-type-label">{language === 'vi' ? 'Bình thường' : 'Normal'}</span>
-                                <div className="hr-val-text">
-                                    {normalBpm} <span className="stat-unit-text">bpm</span>
-                                </div>
-                            </div>
-                            <div className="hr-metric-divider" />
-                            <div className="hr-metric-block">
-                                <span className="hr-type-label">{language === 'vi' ? 'Khi nghỉ' : 'Resting'}</span>
-                                <div className="hr-val-text" style={{ color: theme.accents.emerald }}>
-                                    {restingBpm} <span className="stat-unit-text">bpm</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="hr-timestamp">
-                            <Clock size={12} style={{ opacity: 0.7 }} />
-                            <span>{language === 'vi' ? 'Bản ghi mới nhất' : 'Newest reading'}: {newestTime || 'Recent'}</span>
-                        </div>
-                    </div>
+                    <StatCard
+                        icon={<Heart color={theme.accents.rose} />}
+                        label={t('dashboard.heartRate')}
+                        value={displayNormalBpm}
+                        subValue={t('dashboard.restingHeartRate', { val: displayRestingBpm })}
+                        bg={theme.accents.indigoBg}
+                    />
 
                     <StatCard
                         icon={<Moon color={theme.accents.indigo} />}
