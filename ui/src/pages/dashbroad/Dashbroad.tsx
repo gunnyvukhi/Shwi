@@ -3,8 +3,6 @@ import './Dashbroad.css';
 import {
     Heart,
     Moon,
-    Activity,
-    Flame,
     TrendingDown,
     TrendingUp,
     Edit2,
@@ -13,8 +11,6 @@ import {
 import {
     LineChart,
     Line,
-    AreaChart,
-    Area,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -26,9 +22,12 @@ import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
+import MovementCard from '../../components/ui/card/MovementCard';
+import StatCard from '../../components/ui/card/StatCard';
+import NutritionMiniCard from '../../components/ui/card/NutritionMiniCard';
+import ActivityChart from '../../components/ui/chart/ActivityChart';
 import {
     userService,
-    type ActivityItem,
     type WeightItem,
     type HeartRateItem,
     type SleepItem,
@@ -38,17 +37,6 @@ import {
 } from '../../services/userService';
 
 // Temp / Fallback Data
-const tempActivityDataDay: ActivityItem[] = [
-    { time: '6AM', cal: 0 }, { time: '9AM', cal: 0 }, { time: '12PM', cal: 0 },
-    { time: '3PM', cal: 0 }, { time: '6PM', cal: 0 }, { time: '9PM', cal: 0 },
-];
-const tempActivityDataWeek: ActivityItem[] = [
-    { time: 'Mon', cal: 0 }, { time: 'Tue', cal: 0 }, { time: 'Wed', cal: 0 },
-    { time: 'Thu', cal: 0 }, { time: 'Fri', cal: 0 }, { time: 'Sat', cal: 0 }, { time: 'Sun', cal: 0 },
-];
-const tempActivityDataMonth: ActivityItem[] = [
-    { time: 'W1', cal: 0 }, { time: 'W2', cal: 0 }, { time: 'W3', cal: 0 }, { time: 'W4', cal: 0 },
-];
 
 const tempWeightDataMonth: WeightItem[] = [
     { month: 'Jan', weight: 0 }, { month: 'Feb', weight: 0 }, { month: 'Mar', weight: 0 },
@@ -66,7 +54,6 @@ const defaultHeartRateLogs: HeartRateItem[] = [
 
 export default function Dashboard() {
     const { t, language } = useLanguage();
-    const [activityFilter, setActivityFilter] = useState<'Day' | 'Week' | 'Month'>('Day');
     const [goalModalOpen, setGoalModalOpen] = useState(false);
     const [goalType, setGoalType] = useState<'Lose' | 'Gain'>('Lose');
     const [targetWeight, setTargetWeight] = useState(50);
@@ -75,9 +62,6 @@ export default function Dashboard() {
         return saved !== null ? saved === 'dark' : true;
     });
 
-    const [activityDataDay, setActivityDataDay] = useState<ActivityItem[]>(tempActivityDataDay);
-    const [activityDataWeek, setActivityDataWeek] = useState<ActivityItem[]>(tempActivityDataWeek);
-    const [activityDataMonth, setActivityDataMonth] = useState<ActivityItem[]>(tempActivityDataMonth);
     const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(tempWeightDataMonth);
 
     // Specialized Health & Fitness States from DB
@@ -92,9 +76,6 @@ export default function Dashboard() {
         userService.getDashboardData()
             .then(data => {
                 if (!isMounted) return;
-                setActivityDataDay(data.activityDataDay && data.activityDataDay.length > 0 ? data.activityDataDay : tempActivityDataDay);
-                setActivityDataWeek(data.activityDataWeek && data.activityDataWeek.length > 0 ? data.activityDataWeek : tempActivityDataWeek);
-                setActivityDataMonth(data.activityDataMonth && data.activityDataMonth.length > 0 ? data.activityDataMonth : tempActivityDataMonth);
                 setWeightDataMonth(data.weightDataMonth && data.weightDataMonth.length > 0 ? data.weightDataMonth : tempWeightDataMonth);
 
                 if (data.heartRateLogs && data.heartRateLogs.length > 0) {
@@ -108,9 +89,7 @@ export default function Dashboard() {
             .catch(err => {
                 console.error("Failed to fetch dashboard data from API:", err);
                 if (!isMounted) return;
-                setActivityDataDay(tempActivityDataDay);
-                setActivityDataWeek(tempActivityDataWeek);
-                setActivityDataMonth(tempActivityDataMonth);
+
                 setWeightDataMonth(tempWeightDataMonth);
             });
 
@@ -128,16 +107,6 @@ export default function Dashboard() {
     };
 
     const currentWeight = 56.0;
-
-    const activeActivityData =
-        activityFilter === 'Day' ? activityDataDay :
-            activityFilter === 'Week' ? activityDataWeek : activityDataMonth;
-
-    const getFilterLabel = (filter: 'Day' | 'Week' | 'Month') => {
-        if (filter === 'Day') return t('dashboard.day');
-        if (filter === 'Week') return t('dashboard.week');
-        return t('dashboard.month');
-    };
 
     const currentDate = language === 'vi'
         ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
@@ -176,12 +145,10 @@ export default function Dashboard() {
     const displaySleepQuality = latestSleep && latestSleep.sleepQuality ? `${latestSleep.sleepQuality}%` : "85%";
 
     const latestStep = stepLogs.length > 0 ? stepLogs[0] : null;
-    const displayStepValue = latestStep ? latestStep.steps.toLocaleString() : "12,456";
-    const displayStepGoal = latestStep ? latestStep.targetSteps.toLocaleString() : "10,000";
 
-    const totalBurned = workoutLogs.length > 0
-        ? Math.round(workoutLogs.reduce((acc, w) => acc + w.caloriesBurned, 0) + 2100)
-        : 2640;
+    const activeCaloriesBurned = workoutLogs.length > 0
+        ? Math.round(workoutLogs.reduce((acc, w) => acc + w.caloriesBurned, 0))
+        : 640;
     const totalIn = foodIntakeLogs.length > 0
         ? Math.round(foodIntakeLogs.reduce((acc, f) => acc + f.calories, 0))
         : 2400;
@@ -205,36 +172,33 @@ export default function Dashboard() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="stats-grid">
-                    <StatCard
-                        icon={<Heart color={theme.accents.rose} />}
-                        label={t('dashboard.heartRate')}
-                        value={displayNormalBpm}
-                        subValue={t('dashboard.resting', { val: displayRestingBpm })}
-                        bg={theme.accents.indigoBg}
-                    />
-
-                    <StatCard
-                        icon={<Moon color={theme.accents.indigo} />}
-                        label={t('dashboard.sleep')}
-                        value={displaySleepValue}
-                        subValue={t('dashboard.sleepQuality', { val: displaySleepQuality })}
-                        bg={theme.accents.indigoBg}
-                    />
-                    <StatCard
-                        icon={<Activity color="var(--primary)" />}
-                        label={t('dashboard.steps')}
-                        value={displayStepValue}
-                        subValue={t('dashboard.stepGoal', { val: displayStepGoal })}
-                        bg={theme.accents.skyBg}
-                    />
-                    <StatCard
-                        icon={<Flame color={theme.accents.orange} />}
-                        label={t('dashboard.caloriesBurned')}
-                        value={`${totalBurned} kcal`}
-                        subValue={t('dashboard.caloriesIn', { val: `${totalIn} Kcal` })}
-                        bg={theme.accents.orangeBg}
-                    />
+                <div className="dashboard-stats-grid">
+                    {/* Movement card — 3/5 width */}
+                    <div className="stats-grid-movement">
+                        <MovementCard
+                            stepsGoal={latestStep ? latestStep.targetSteps : 10000}
+                            stepsCurrent={latestStep ? latestStep.steps : 12456}
+                            caloriesBurned={activeCaloriesBurned}
+                        />
+                    </div>
+                    {/* Right stacked — 2/5 width */}
+                    <div className="stats-grid-side">
+                        <StatCard
+                            icon={<Heart size={20} />}
+                            label={t('dashboard.heartRate') || 'Heart Rate'}
+                            value={displayNormalBpm || '117 bpm'}
+                            subValue={t('dashboard.resting', { val: displayRestingBpm }) || 'Resting: 62 bpm'}
+                            badgeColorClass="badge-rose"
+                        />
+                        <StatCard
+                            icon={<Moon size={20} />}
+                            label={t('dashboard.sleep') || 'Sleep'}
+                            value={displaySleepValue || '7 h 23 m'}
+                            subValue={t('dashboard.sleepQuality', { val: displaySleepQuality }) || 'Quality: 85%'}
+                            badgeColorClass="badge-indigo"
+                        />
+                        <NutritionMiniCard caloriesIn={totalIn} />
+                    </div>
                 </div>
 
                 {/* Charts & Body Layout */}
@@ -242,45 +206,7 @@ export default function Dashboard() {
                     <div className="charts-col">
 
                         {/* Activity Chart */}
-                        <div className="card-panel">
-                            <div className="card-header">
-                                <div>
-                                    <h2 className="card-title">
-                                        {t('dashboard.activityBurnTitle')} <span className="text-primary">{t('dashboard.activityBurnHighlight')}</span>
-                                    </h2>
-                                    <p className="card-subtitle">{t('dashboard.activityBurnSub')}</p>
-                                </div>
-                                <div className="filter-pills">
-                                    {(['Day', 'Week', 'Month'] as const).map(filter => (
-                                        <button
-                                            key={filter}
-                                            onClick={() => setActivityFilter(filter)}
-                                            className={`filter-btn ${activityFilter === filter ? 'active' : ''}`}
-                                        >
-                                            {getFilterLabel(filter)}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="chart-container">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={activeActivityData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                                        <defs>
-                                            <linearGradient id="colorCal" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
-                                                <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-line)" vertical={false} />
-                                        <XAxis dataKey="time" stroke="var(--chart-text)" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="var(--chart-text)" fontSize={12} tickLine={false} axisLine={false} />
-                                        <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card-solid)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-main)' }} itemStyle={{ color: 'var(--primary)' }} />
-                                        <Area type="monotone" dataKey="cal" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorCal)" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+                        <ActivityChart />
 
                         {/* Weight Progress (with Line Chart and Circle) */}
                         <div className="card-panel">
@@ -391,26 +317,3 @@ export default function Dashboard() {
     );
 }
 
-// Sub-components
-interface StatCardProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    subValue: string;
-    bg: string;
-}
-
-function StatCard({ icon, label, value, subValue, bg }: StatCardProps) {
-    return (
-        <div className="stat-card">
-            <div className="stat-header">
-                <div className="stat-icon-wrap" style={{ backgroundColor: bg }}>{icon}</div>
-                <span className="stat-label">{label}</span>
-            </div>
-            <div>
-                <div className="stat-value">{value}</div>
-                <div className="stat-subval">{subValue}</div>
-            </div>
-        </div>
-    );
-}

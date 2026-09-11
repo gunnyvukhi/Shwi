@@ -1,0 +1,165 @@
+/* ==========================================================================
+   Nutrition Mini Card Component (.nutrition-card)
+   ========================================================================== */
+
+.nutrition-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 1.25rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    padding: 1.25rem 1.5rem;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    flex: 1;
+    min-height: 200px;
+}
+
+@media (min-width: 640px) {
+    .nutrition-card {
+        padding: 1.5rem;
+    }
+}
+
+.nutrition-card:hover {
+    background-color: var(--bg-card-solid);
+}
+
+.nutrition-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.nutrition-header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nutrition-icon-badge {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+}
+
+.nutrition-title {
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+    .nutrition-title {
+        font-size: 1rem;
+    }
+}
+
+.nutrition-subtitle {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.nutrition-stats-right {
+    text-align: right;
+}
+
+.nutrition-calories {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+@media (min-width: 640px) {
+    .nutrition-calories {
+        font-size: 1.25rem;
+    }
+}
+
+.nutrition-goal {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+.nutrition-reached-badge {
+    font-size: 10px;
+    color: #34d399;
+    font-weight: 600;
+}
+
+/* Macros Breakdown */
+.nutrition-macros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.625rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+.nutrition-macro-item {
+    background-color: var(--bg-main);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.nutrition-macro-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.nutrition-macro-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.nutrition-macro-amount {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.nutrition-macro-track {
+    height: 0.25rem;
+    border-radius: 9999px;
+    background-color: var(--border-color);
+    overflow: hidden;
+}
+
+.nutrition-macro-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+.macro-bar-protein { background-color: #34d399; }
+.macro-bar-carbs { background-color: #38bdf8; }
+.macro-bar-fat { background-color: #fbbf24; }
+
+/* Theme adaptations for Light Mode */
+.theme-light .nutrition-macro-item {
+    background-color: var(--bg-card-solid);
+}
+
+.theme-light .nutrition-card {
+    background-color: var(--bg-card);
+}
+
+.theme-light .nutrition-card:hover {
+    background-color: var(--bg-card-solid);
+}

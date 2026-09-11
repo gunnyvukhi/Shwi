@@ -32,9 +32,16 @@
 
 /* Main Container */
 .dashboard-app-wrapper main {
-    max-width: 1280px;
+    max-width: 1380px;
     margin: 0 auto;
-    padding: 5.5rem 1rem 2rem;
+    padding: 5.5rem 1.25rem 2.5rem;
+}
+
+@media (min-width: 1280px) {
+    .dashboard-app-wrapper main {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
 }
 
 .page-header {
@@ -90,6 +97,49 @@
     background-color: var(--bg-main);
     border-color: var(--primary);
     color: var(--primary);
+}
+
+/* ==========================================================================
+   Dashboard Stats Grid Layout & Subcomponents
+   ========================================================================== */
+
+/* Main Stats Grid Layout */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    align-items: stretch;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-stats-grid {
+        grid-template-columns: 3fr 2fr;
+        min-height: 600px;
+        gap: 1.75rem;
+    }
+}
+
+.stats-grid-movement {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-grid-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    height: 100%;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .stats-grid-side {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
 }
 
 /* Stats Summary Cards */
@@ -264,49 +314,6 @@
     font-size: 0.875rem;
     color: var(--text-muted);
     margin: 0;
-}
-
-.filter-pills {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    background-color: var(--bg-main);
-    border-radius: 0.5rem;
-    padding: 0.25rem;
-    border: 1px solid var(--border-color);
-    align-self: flex-start;
-}
-
-@media (min-width: 640px) {
-    .filter-pills {
-        align-self: auto;
-    }
-}
-
-.filter-btn {
-    border-radius: 0.375rem;
-    padding: 0.375rem 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    transition: all 0.2s ease;
-}
-
-.filter-btn:hover {
-    color: var(--text-main);
-}
-
-.filter-btn.active {
-    background-color: var(--border-color);
-    color: var(--text-main);
-}
-
-.chart-container {
-    height: 16rem;
-    width: 100%;
 }
 
 .goal-status {

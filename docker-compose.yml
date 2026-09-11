@@ -9,6 +9,11 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     secrets:
       - DB_PASSWORD
 
@@ -22,15 +27,14 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - logs:/app/logs
 
   ui:
     build: ./ui
     restart: always
-    env_file:
-      - ./ui/.env
     ports:
       - "80:80"
     depends_on:
