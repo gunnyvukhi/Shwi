@@ -15,9 +15,8 @@ export interface User {
   height?: number;
   gender?: string;
   phone?: string;
+  yob?: number;
   age?: number;
-  experienceLevel?: string;
-  workoutSplit?: string;
   bodyFat?: number;
   rhr?: number;
   createdAt?: string;

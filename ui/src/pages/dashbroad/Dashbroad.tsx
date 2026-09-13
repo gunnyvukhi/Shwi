@@ -39,9 +39,9 @@ import {
 // Temp / Fallback Data
 
 const tempWeightDataMonth: WeightItem[] = [
-    { month: 'Jan', weight: 0 }, { month: 'Feb', weight: 0 }, { month: 'Mar', weight: 0 },
-    { month: 'Apr', weight: 0 }, { month: 'May', weight: 0 }, { month: 'Jun', weight: 0 },
-    { month: 'Jul', weight: 0 },
+    { month: '01/26', weight: 0 }, { month: '02/26', weight: 0 }, { month: '03/26', weight: 0 },
+    { month: '04/26', weight: 0 }, { month: '05/26', weight: 0 }, { month: '06/26', weight: 0 },
+    { month: '07/26', weight: 0 },
 ];
 
 const defaultHeartRateLogs: HeartRateItem[] = [

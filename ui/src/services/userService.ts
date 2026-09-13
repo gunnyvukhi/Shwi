@@ -12,6 +12,19 @@ export interface WeightItem {
   weight: number;
 }
 
+export interface BodyConditionItem {
+  id: number;
+  userId: string;
+  weight: number;
+  height?: number | null;
+  bmi?: number | null;
+  bodyFat?: number | null;
+  muscleMass?: number | null;
+  date?: string;
+  loggedAt?: string;
+  createdAt?: string;
+}
+
 export interface HeartRateItem {
   id: number;
   userId: string;
@@ -74,6 +87,7 @@ export interface DashboardData {
   activityDataWeek: ActivityItem[];
   activityDataMonth: ActivityItem[];
   weightDataMonth: WeightItem[];
+  bodyConditionLogs?: BodyConditionItem[];
   heartRateLogs?: HeartRateItem[];
   sleepLogs?: SleepItem[];
   stepLogs?: StepItem[];
@@ -191,5 +205,66 @@ export const userService = {
       throw new Error(data.error || 'Failed to log heart rate');
     }
     return data.log;
+  },
+
+  async getBodyConditionLogs(): Promise<BodyConditionItem[]> {
+    const token = localStorage.getItem('gym_auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/body-condition`, {
+      method: 'GET',
+      headers,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to fetch body condition logs');
+    }
+    return data.bodyConditionLogs || [];
+  },
+
+  async addBodyConditionLog(payload: {
+    weight: number;
+    height?: number;
+    bodyFat?: number;
+    muscleMass?: number;
+    date?: string;
+  }): Promise<BodyConditionItem> {
+    const token = localStorage.getItem('gym_auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/body-condition`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to log body condition');
+    }
+    return data.log;
+  },
+
+  async deleteBodyConditionLog(logId: number): Promise<void> {
+    const token = localStorage.getItem('gym_auth_token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/body-condition/${logId}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to delete body condition log');
+    }
   }
 };

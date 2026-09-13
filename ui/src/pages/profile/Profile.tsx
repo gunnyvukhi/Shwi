@@ -48,9 +48,7 @@ export default function Profile() {
     targetWeight: 65,
     gender: 'Male',
     phone: '',
-    age: 25,
-    experienceLevel: 'Intermediate (2-3 yrs)',
-    workoutSplit: 'Push / Pull / Legs (PPL)',
+    yob: 2000,
     bodyFat: 14.5,
     rhr: 58
   });
@@ -66,9 +64,7 @@ export default function Profile() {
         targetWeight: user.targetWeight || 65,
         gender: user.gender || 'Male',
         phone: user.phone || '',
-        age: user.age || 25,
-        experienceLevel: user.experienceLevel || 'Intermediate (2-3 yrs)',
-        workoutSplit: user.workoutSplit || 'Push / Pull / Legs (PPL)',
+        yob: user.yob || (user.age ? new Date().getFullYear() - user.age : 2000),
         bodyFat: user.bodyFat || 14.5,
         rhr: user.rhr || 58
       });
@@ -128,8 +124,9 @@ export default function Profile() {
       Number(bmiVal) < 25 ? 'Normal Weight' :
         Number(bmiVal) < 30 ? 'Overweight' : 'Obese';
 
-  // BMR Estimate (Mifflin-St Jeor formula)
-  const bmrEst = Math.round(10 * currentW + 6.25 * currentH - 5 * formData.age + (formData.gender === 'Male' ? 5 : -161));
+  // Age & BMR Estimate (Mifflin-St Jeor formula)
+  const calculatedAge = formData.yob ? new Date().getFullYear() - formData.yob : 25;
+  const bmrEst = Math.round(10 * currentW + 6.25 * currentH - 5 * calculatedAge + (formData.gender === 'Male' ? 5 : -161));
 
   const formattedJoinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -419,20 +416,12 @@ export default function Profile() {
                   <span className="profile-detail-val">{formData.phone || 'Not provided'}</span>
                 </div>
                 <div className="profile-detail-row">
-                  <span className="profile-detail-label">Age</span>
-                  <span className="profile-detail-val">{formData.age} years old</span>
+                  <span className="profile-detail-label">Year of Birth (Age)</span>
+                  <span className="profile-detail-val">{formData.yob} ({calculatedAge} years old)</span>
                 </div>
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">Gender</span>
                   <span className="profile-detail-val">{formData.gender}</span>
-                </div>
-                <div className="profile-detail-row">
-                  <span className="profile-detail-label">Experience Level</span>
-                  <span className="profile-detail-val">{formData.experienceLevel}</span>
-                </div>
-                <div className="profile-detail-row">
-                  <span className="profile-detail-label">Workout Split</span>
-                  <span className="profile-detail-val">{formData.workoutSplit}</span>
                 </div>
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">Body Fat %</span>
@@ -586,13 +575,18 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="profile-input-label">Age (years)</label>
+                <label className="profile-input-label">Year of Birth (YOB)</label>
                 <input
                   type="number"
+                  min="1900"
+                  max={new Date().getFullYear()}
                   className="profile-text-input"
-                  value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })}
+                  value={formData.yob}
+                  onChange={(e) => setFormData({ ...formData, yob: Number(e.target.value) })}
                 />
+                <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
+                  Calculated Age: {calculatedAge} years old
+                </span>
               </div>
 
               <div>
@@ -647,34 +641,6 @@ export default function Profile() {
                   value={formData.bodyFat}
                   onChange={(e) => setFormData({ ...formData, bodyFat: Number(e.target.value) })}
                 />
-              </div>
-
-              <div>
-                <label className="profile-input-label">Experience Level</label>
-                <select
-                  className="profile-text-input"
-                  value={formData.experienceLevel}
-                  onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value })}
-                >
-                  <option value="Beginner (<1 yr)">Beginner (&lt;1 yr)</option>
-                  <option value="Intermediate (2-3 yrs)">Intermediate (2-3 yrs)</option>
-                  <option value="Advanced (4+ yrs)">Advanced (4+ yrs)</option>
-                  <option value="Elite Athlete">Elite Athlete</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="profile-input-label">Workout Split</label>
-                <select
-                  className="profile-text-input"
-                  value={formData.workoutSplit}
-                  onChange={(e) => setFormData({ ...formData, workoutSplit: e.target.value })}
-                >
-                  <option value="Push / Pull / Legs (PPL)">Push / Pull / Legs (PPL)</option>
-                  <option value="Upper / Lower Split">Upper / Lower Split</option>
-                  <option value="Full Body 3x/week">Full Body 3x/week</option>
-                  <option value="Arnold Split">Arnold Split</option>
-                </select>
               </div>
 
               <div>

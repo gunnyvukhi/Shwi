@@ -19,7 +19,7 @@ const defaultActivityDataDay: ActivityItem[] = [
 ];
 
 const defaultActivityDataWeek: ActivityItem[] = [
-    { time: 'Mon', cal: 2000 }, { time: 'Tue', cal: 2100 }, { time: 'Wed', cal: 2200 },
+    { time: 'Mon', cal: 2000 }, { time: 'Tue', cal: 1800 }, { time: 'Wed', cal: 2200 },
     { time: 'Thu', cal: 2300 }, { time: 'Fri', cal: 2400 }, { time: 'Sat', cal: 2500 }, { time: 'Sun', cal: 2000 },
 ];
 
