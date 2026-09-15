@@ -7,6 +7,14 @@ __pycache__
 gym_auth.db
 DB_PASSWORD.txt
 
+# Firebase & Secret Keys
+firebase-key.json
+**/firebase-key.json
+firebase-adminsdk*.json
+**/firebase-adminsdk*.json
+*-key.json
+**/*-key.json
+
 # Logs
 logs
 *.log

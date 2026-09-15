@@ -9,11 +9,12 @@ export interface User {
   avatarUrl?: string;
   wallpaperUrl?: string;
   bio?: string;
-  fitnessGoal?: string;
+  fitnessGoal?: number | string;
   targetWeight?: number;
+  targetSteps?: number;
   currentWeight?: number;
   height?: number;
-  gender?: string;
+  gender?: number | string;
   phone?: string;
   yob?: number;
   age?: number;

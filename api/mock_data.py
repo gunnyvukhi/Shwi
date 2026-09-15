@@ -6,9 +6,10 @@ khớp 100% với database schema mới trong models.py.
 
 from datetime import date, datetime, timedelta, timezone
 from models import (
-    db, User, UserInfo, BodyConditionLog, HeartRateLog, RestingHeartRateLog,
+    db, User, UserInfo, BodyConditionLog,
     SleepLog, StepLog, WorkoutPlan, WorkoutLog, MealLog
 )
+import firebase_service
 
 def calculate_month_offset(base_date: date, offset_months: int) -> date:
     """Helper tính ngày ở n tháng trước/sau."""
@@ -19,9 +20,9 @@ def calculate_month_offset(base_date: date, offset_months: int) -> date:
 
 
 def create_or_get_test_user(
-    email: str = 'testuser@shwigym.com',
-    password: str = 'Password123@',
-    name: str = 'Alex Mercer'
+    email: str = 'test@email.com',
+    password: str = '12345@',
+    name: str = 'Thang bo may'
 ) -> User:
     """
     Tạo hoặc lấy tài khoản người dùng test với đầy đủ thông tin profile.
@@ -49,8 +50,8 @@ def create_or_get_test_user(
     info.name = name
     info.bio = "Fitness enthusiast & strength training athlete"
     info.fitness_goal = 0  # 0: lose weight
-    info.target_weight = 72.0
-    info.target_steps = 10000
+    info.target_weight = 64.0
+    info.target_steps = 12000
     info.gender = 0  # 0: Male
     info.phone = "+1 555-0199"
     info.yob = 1998  # 28 years old
@@ -65,10 +66,9 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
     - BodyConditionLog: 6 tháng gần nhất có khoảng trống kiểm thử forward-fill.
     - WorkoutPlan & WorkoutLog: Kế hoạch Push Pull Legs và các buổi tập trong tuần.
     - StepLog: Chuẩn 6 khung giờ hôm nay (6AM, 9AM, 12PM, 3PM, 6PM, 9PM).
-    - HeartRateLog: Các mốc đo nhịp tim trong ngày.
-    - RestingHeartRateLog: 7 ngày nhịp tim nghỉ ngơi.
     - SleepLog: Giấc ngủ đêm qua với chi tiết các giai đoạn.
     - MealLog: 4 bữa ăn đầy đủ macros.
+    - HeartRate & RestingHeartRate: Đồng bộ lên Firebase Realtime Database.
     """
     user = db.session.get(User, user_id)
     if not user:
@@ -76,8 +76,6 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
 
     if clear_existing:
         BodyConditionLog.query.filter_by(user_id=user_id).delete()
-        RestingHeartRateLog.query.filter_by(user_id=user_id).delete()
-        HeartRateLog.query.filter_by(user_id=user_id).delete()
         SleepLog.query.filter_by(user_id=user_id).delete()
         StepLog.query.filter_by(user_id=user_id).delete()
         WorkoutLog.query.filter_by(user_id=user_id).delete()
@@ -96,22 +94,31 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
 
     body_logs = [
         BodyConditionLog(user_id=user_id, weight=82.0, height=178.0, body_fat=19.5, muscle_mass=58.0, date=d_5m),
-        BodyConditionLog(user_id=user_id, weight=80.5, height=178.0, body_fat=18.5, muscle_mass=58.5, date=d_4m),
+        BodyConditionLog(user_id=user_id, weight=79.5, height=178.0, body_fat=18.5, muscle_mass=58.5, date=d_4m),
         # 3 tháng trước: bỏ qua để test forward-fill
-        BodyConditionLog(user_id=user_id, weight=79.0, height=178.0, body_fat=17.5, muscle_mass=59.0, date=d_2m),
+        BodyConditionLog(user_id=user_id, weight=77.0, height=178.0, body_fat=17.5, muscle_mass=59.0, date=d_2m),
         # 1 tháng trước: bỏ qua để test forward-fill
-        BodyConditionLog(user_id=user_id, weight=77.2, height=178.0, body_fat=16.5, muscle_mass=60.0, date=d_curr),
+        BodyConditionLog(user_id=user_id, weight=74.2, height=178.0, body_fat=16.5, muscle_mass=60.0, date=d_curr),
     ]
     db.session.add_all(body_logs)
 
     # 2. WorkoutPlan & WorkoutLog
-    plan = WorkoutPlan(
+    plan1 = WorkoutPlan(
         user_id=user_id,
         name='Push Pull Legs',
         priority=1,
         note='3-day split focused on progressive overload and hypertrophy'
     )
-    db.session.add(plan)
+    db.session.add(plan1)
+    db.session.flush()
+
+    plan2 = WorkoutPlan(
+        user_id=user_id,
+        name='Upper/Lower',
+        priority=2,
+        note='4-day split focused on strength'
+    )
+    db.session.add(plan2)
     db.session.flush()
 
     # Tạo các buổi tập trong tuần này (Monday -> hôm nay)
@@ -119,19 +126,35 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
     w_logs = [
         WorkoutLog(
             user_id=user_id,
-            plan_id=plan.id,
-            workout_name='Push Day (Chest, Shoulders, Triceps)',
+            plan_id=plan1.id,
+            workout_name='Push Day',
             duration_minutes=60,
             note='Barbell Bench Press 4x8, OHP 3x10, Tricep Dips 3x12',
             created_at=datetime(monday.year, monday.month, monday.day, 17, 30, tzinfo=timezone.utc)
         ),
         WorkoutLog(
             user_id=user_id,
-            plan_id=plan.id,
+            plan_id=plan1.id,
             workout_name='Pull Day (Back, Biceps, Rear Delts)',
             duration_minutes=65,
             note='Deadlifts 3x5, Lat Pulldown 4x10, Barbell Curls 3x12',
             created_at=datetime(monday.year, monday.month, monday.day, 17, 30, tzinfo=timezone.utc) + timedelta(days=2)
+        ),
+        WorkoutLog(
+            user_id=user_id,
+            plan_id=plan2.id,
+            workout_name='Upper Day',
+            duration_minutes=45,
+            note='Bench Press, Lat Pulldown, Lateral Raises',
+            created_at=datetime(monday.year, monday.month, monday.day, 17, 30, tzinfo=timezone.utc) + timedelta(days=2)
+        ),
+        WorkoutLog(
+            user_id=user_id,
+            plan_id=plan2.id,
+            workout_name='Lower Day',
+            duration_minutes=45,
+            note='Squats, Deadlifts, Leg Extensions',
+            created_at=datetime(monday.year, monday.month, monday.day, 17, 30, tzinfo=timezone.utc) + timedelta(days=1)
         )
     ]
     db.session.add_all(w_logs)
@@ -143,7 +166,7 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
         ('12PM', 5800, 4.35, 58),
         ('3PM', 7900, 5.92, 80),
         ('6PM', 10400, 7.8, 105),
-        ('9PM', 12350, 9.25, 125)
+        ('9PM', 2350, 1.8, 25)
     ]
     for label, steps, dist, mins in step_intervals_data:
         db.session.add(StepLog(
@@ -155,26 +178,11 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
             time_walked_minutes=mins
         ))
 
-    # 4. HeartRateLog
-    hr_samples = [
-        (65, now - timedelta(hours=10)),
-        (72, now - timedelta(hours=7)),
-        (135, now - timedelta(hours=4)),  # Lúc tập gym
-        (118, now - timedelta(hours=3)),
-        (82, now - timedelta(hours=2)),
-        (68, now - timedelta(minutes=30))
-    ]
-    for bpm_val, dt_rec in hr_samples:
-        db.session.add(HeartRateLog(user_id=user_id, bpm=bpm_val, recorded_at=dt_rec))
+    # 4. HeartRate (Cập nhật nhịp tim lên Firebase RTDB)
+    firebase_service.save_heart_rate(user_id=user_id, bpm=90, recorded_at=now)
 
-    # 5. RestingHeartRateLog (7 ngày gần nhất)
-    rhr_history = [(0, 58), (1, 59), (2, 57), (3, 60), (4, 58), (5, 56), (6, 58)]
-    for days_back, bpm_val in rhr_history:
-        db.session.add(RestingHeartRateLog(
-            user_id=user_id,
-            bpm=bpm_val,
-            recorded_at=now - timedelta(days=days_back)
-        ))
+    # 5. RestingHeartRate (Cập nhật nhịp tim nghỉ ngơi lên Firebase RTDB)
+    firebase_service.save_resting_heart_rate(user_id=user_id, bpm=62, recorded_at=now)
 
     # 6. SleepLog (Chu kỳ ngủ đêm qua: 8PM hôm qua -> 8AM hôm nay)
     yesterday = today - timedelta(days=1)
@@ -216,8 +224,8 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
         'workoutPlans': 1,
         'workoutLogs': len(w_logs),
         'stepLogs': len(step_intervals_data),
-        'heartRateLogs': len(hr_samples),
-        'restingHeartRateLogs': len(rhr_history),
+        'heartRateUpdated': True,
+        'restingHeartRateUpdated': True,
         'sleepLogs': 1,
         'mealLogs': len(meals_data)
     }

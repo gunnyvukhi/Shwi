@@ -58,11 +58,11 @@ export default function Profile() {
       setFormData({
         name: user.name || '',
         bio: user.bio || '',
-        fitnessGoal: user.fitnessGoal || 'Lose Weight',
+        fitnessGoal: user.fitnessGoal !== undefined ? (user.fitnessGoal === 1 ? 'Gain Weight' : (user.fitnessGoal === 0 ? 'Lose Weight' : String(user.fitnessGoal))) : 'Lose Weight',
         height: user.height || 175,
         currentWeight: user.currentWeight || 70,
         targetWeight: user.targetWeight || 65,
-        gender: user.gender || 'Male',
+        gender: user.gender !== undefined ? (user.gender === 1 ? 'Female' : (user.gender === 2 ? 'Other' : (user.gender === 0 ? 'Male' : String(user.gender)))) : 'Male',
         phone: user.phone || '',
         yob: user.yob || (user.age ? new Date().getFullYear() - user.age : 2000),
         bodyFat: user.bodyFat || 14.5,

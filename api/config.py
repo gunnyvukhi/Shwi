@@ -28,4 +28,8 @@ class Config:
     CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET', '').strip()
     CLOUDINARY_UPLOAD_PRESET = os.getenv('CLOUDINARY_UPLOAD_PRESET', '').strip()
 
+    # Firebase Realtime Database
+    FIREBASE_DATABASE_URL = os.getenv('FIREBASE_DATABASE_URL', 'https://shwi-f683d-default-rtdb.asia-southeast1.firebasedatabase.app').strip()
+    FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-key.json').strip()
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False

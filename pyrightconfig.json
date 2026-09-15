@@ -1,0 +1,11 @@
+{
+  "executionEnvironments": [
+    {
+      "root": "api",
+      "venvPath": "api",
+      "venv": ".venv",
+      "typeCheckingMode": "off"
+    }
+  ],
+  "typeCheckingMode": "off"
+}

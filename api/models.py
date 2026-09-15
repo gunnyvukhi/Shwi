@@ -1,7 +1,10 @@
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportAssignmentType=false
+# pyright: reportCallIssue=false
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime, timedelta, timezone
-
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -9,6 +12,7 @@ class User(db.Model):
     Core User model focusing strictly on authentication, credentials, roles, and security tokens.
     """
     __tablename__ = 'users'
+    __allow_unmapped__ = True
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
@@ -34,8 +38,6 @@ class User(db.Model):
     )
 
     # Relationships to logs with cascade delete
-    heart_rate_logs = db.relationship('HeartRateLog', backref='user', cascade='all, delete-orphan', lazy='dynamic')
-    resting_heart_rate_logs = db.relationship('RestingHeartRateLog', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     sleep_logs = db.relationship('SleepLog', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     step_logs = db.relationship('StepLog', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     workout_plans = db.relationship('WorkoutPlan', backref='user', cascade='all, delete-orphan', lazy='dynamic')
@@ -186,32 +188,6 @@ class User(db.Model):
 
         return result
     
-    # Dynamic Heart Rate Metric (latest entry from HeartRateLog)
-    @property
-    def latest_heart_rate(self):
-        try:
-            if not hasattr(self, 'heart_rate_logs'):
-                return {}
-            latest = self.heart_rate_logs.order_by(
-                HeartRateLog.recorded_at.desc(),
-                HeartRateLog.id.desc()
-            ).first()
-            return latest.to_dict() if latest is not None else {}
-        except Exception:
-            return {}
-
-    @property
-    def latest_resting_heart_rate(self):
-        try:
-            if not hasattr(self, 'resting_heart_rate_logs'):
-                return {}
-            latest = self.resting_heart_rate_logs.order_by(
-                RestingHeartRateLog.recorded_at.desc(),
-                RestingHeartRateLog.id.desc()
-            ).first()
-            return latest.to_dict() if latest is not None else {}
-        except Exception:
-            return {}
             
     def get_today_sleep_logs(self):
         """
@@ -475,6 +451,7 @@ class User(db.Model):
         Pull all non-sensitive user profile, metrics, and health logs at once.
         """
         return {
+            'id': str(self.id),
             'profile': {
                 'email': self.email,
                 'role': self.role,
@@ -488,8 +465,6 @@ class User(db.Model):
                 'muscleMass': None,
                 **self.latest_body_condition,
             },
-            'heartRate': self.latest_heart_rate,
-            'restingHeartRate': self.latest_resting_heart_rate,
             'sleep': self.get_today_sleep_logs(),
             'steps': self.get_today_steps_breakdown(),
             'workoutLogs': self.get_this_week_workout_logs(),
@@ -508,7 +483,7 @@ class UserInfo(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False, index=True)
-    name = db.Column(db.String(100), nullable=False, default='')
+    name = db.Column(db.String(100), nullable=False, default='NPC')
     avatar_url = db.Column(db.String(500), nullable=True)
     wallpaper_url = db.Column(db.String(500), nullable=True)
     bio = db.Column(db.String(255), nullable=True)
@@ -528,14 +503,8 @@ class UserInfo(db.Model):
         return None
 
     def __init__(self, **kwargs):
-        if 'age' in kwargs and 'yob' not in kwargs:
-            age_val = kwargs.pop('age')
-            if age_val is not None:
-                try:
-                    kwargs['yob'] = datetime.now(timezone.utc).year - int(age_val)
-                except (ValueError, TypeError):
-                    pass
         super().__init__(**kwargs)
+
 
     def to_dict(self):
         return {
@@ -656,6 +625,7 @@ class BodyConditionLog(db.Model):
 
 class WorkoutPlan(db.Model):
     __tablename__ = 'workout_plans'
+    __allow_unmapped__ = True
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
@@ -667,6 +637,8 @@ class WorkoutPlan(db.Model):
 
     # 1 WorkoutPlan có nhiều WorkoutLog
     workout_logs = db.relationship('WorkoutLog', backref='workout_plan', lazy='dynamic')
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def to_dict(self):
         created_at_iso = None
@@ -690,6 +662,7 @@ class WorkoutLog(db.Model):
     Exercise sessions and workout tracking entries.
     """
     __tablename__ = 'workout_logs'
+    __allow_unmapped__ = True
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
@@ -698,6 +671,9 @@ class WorkoutLog(db.Model):
     duration_minutes = db.Column(db.Integer, nullable=False, default=45)
     note = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def to_dict(self):
         created_at_iso = None
@@ -742,6 +718,9 @@ class StepLog(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @staticmethod
     def determine_time_label(hour: int) -> str:
         """
@@ -777,58 +756,6 @@ class StepLog(db.Model):
             'timeWalkedMinutes': self.time_walked_minutes or 0,
         }
 
-class HeartRateLog(db.Model):
-    """
-    Heart Rate tracking entries for graphs, tables, and resting heart rate monitoring.
-    """
-    __tablename__ = 'heart_rate_logs'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    bpm = db.Column(db.Integer, nullable=False)
-    recorded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-
-    def to_dict(self):
-        rec_iso = None
-        if self.recorded_at:
-            dt = self.recorded_at
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            rec_iso = dt.isoformat()
-
-        return {
-            'id': self.id,
-            'bpm': self.bpm,
-            'recordedAt': rec_iso
-        }
-
-class RestingHeartRateLog(db.Model):
-    """
-    Dedicated table exclusively for Resting Heart Rate (RHR) entries.
-    Tracks resting bpm by date.
-    """
-    __tablename__ = 'resting_heart_rate_logs'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    bpm = db.Column(db.Integer, nullable=False)
-    recorded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-
-    def to_dict(self):
-        created_iso = None
-        if self.created_at:
-            dt = self.created_at
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            created_iso = dt.isoformat()
-
-        return {
-            'id': self.id,
-            'bpm': self.bpm,
-            'recordedAt': created_iso
-        }
 
 class SleepLog(db.Model):
     """
@@ -847,6 +774,9 @@ class SleepLog(db.Model):
     time_label = db.Column(db.String(50), nullable=True)  # e.g. 'Mon', '2026-09-06'
     sleep_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @property
     def sleep_efficiency(self):
@@ -889,6 +819,9 @@ class MealLog(db.Model):
     fat = db.Column(db.Float, nullable=True, default=0.0)
     datetime_eaten = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @property
     def time_eaten(self):

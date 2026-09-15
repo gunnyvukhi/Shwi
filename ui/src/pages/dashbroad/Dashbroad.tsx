@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './Dashbroad.css';
 import {
     Heart,
@@ -22,81 +22,137 @@ import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
-import MovementCard from '../../components/ui/card/MovementCard';
+import MovementCard, { type GymWorkoutSession } from '../../components/ui/card/MovementCard';
 import StatCard from '../../components/ui/card/StatCard';
 import NutritionMiniCard from '../../components/ui/card/NutritionMiniCard';
 import ActivityChart from '../../components/ui/chart/ActivityChart';
 import {
     userService,
     type WeightItem,
-    type HeartRateItem,
-    type SleepItem,
-    type StepItem,
-    type WorkoutItem,
-    type FoodIntakeItem
+    type ActivityItem,
+    type FullDashboardData
 } from '../../services/userService';
+import {
+    subscribeToHeartRate,
+    subscribeToRestingHeartRate,
+    type RealtimeHeartRateData
+} from '../../services/firebaseRealtime';
+
+const DASHBOARD_STORAGE_KEY = 'shwi_dashbroad_data';
 
 // Temp / Fallback Data
-
 const tempWeightDataMonth: WeightItem[] = [
-    { month: '01/26', weight: 0 }, { month: '02/26', weight: 0 }, { month: '03/26', weight: 0 },
-    { month: '04/26', weight: 0 }, { month: '05/26', weight: 0 }, { month: '06/26', weight: 0 },
-    { month: '07/26', weight: 0 },
+    { month: '01/26', weight: 70 }, { month: '02/26', weight: 70 }, { month: '03/26', weight: 70 },
+    { month: '04/26', weight: 70 }, { month: '05/26', weight: 70 }, { month: '06/26', weight: 70 },
 ];
 
-const defaultHeartRateLogs: HeartRateItem[] = [
-    { id: 1, userId: '1', bpm: 117, restingBpm: 62, status: 'Peak', timeLabel: '07:15 PM' },
-    { id: 2, userId: '1', bpm: 135, restingBpm: 62, status: 'Cardio', timeLabel: '05:45 PM' },
-    { id: 3, userId: '1', bpm: 82, restingBpm: 62, status: 'Normal', timeLabel: '02:15 PM' },
-    { id: 4, userId: '1', bpm: 74, restingBpm: 62, status: 'Normal', timeLabel: '11:00 AM' },
-    { id: 5, userId: '1', bpm: 62, restingBpm: 62, status: 'Resting', timeLabel: '08:30 AM' },
-];
+function getStoredDashboard(): FullDashboardData | null {
+    try {
+        const raw = sessionStorage.getItem(DASHBOARD_STORAGE_KEY);
+        if (raw) {
+            return JSON.parse(raw);
+        }
+    } catch (e) {
+        console.warn('[Dashboard] Could not parse dashboard data from sessionStorage:', e);
+    }
+    return null;
+}
 
 export default function Dashboard() {
     const { t, language } = useLanguage();
     const [goalModalOpen, setGoalModalOpen] = useState(false);
-    const [goalType, setGoalType] = useState<'Lose' | 'Gain'>('Lose');
-    const [targetWeight, setTargetWeight] = useState(50);
+
     const [isDarkTheme, setIsDarkTheme] = useState(() => {
         const saved = localStorage.getItem('shwi_theme');
         return saved !== null ? saved === 'dark' : true;
     });
 
-    const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(tempWeightDataMonth);
+    // 1. Initialize states from sessionStorage cache if present (Instant zero-flicker render)
+    const initialStored = getStoredDashboard();
 
-    // Specialized Health & Fitness States from DB
-    const [heartRateLogs, setHeartRateLogs] = useState<HeartRateItem[]>(defaultHeartRateLogs);
-    const [sleepLogs, setSleepLogs] = useState<SleepItem[]>([]);
-    const [stepLogs, setStepLogs] = useState<StepItem[]>([]);
-    const [workoutLogs, setWorkoutLogs] = useState<WorkoutItem[]>([]);
-    const [foodIntakeLogs, setFoodIntakeLogs] = useState<FoodIntakeItem[]>([]);
+    const [dashboardData, setDashboardData] = useState<FullDashboardData | null>(initialStored);
+    const [goalType, setGoalType] = useState<'Lose' | 'Gain'>(() => {
+        return initialStored?.profile?.fitnessGoal === 1 ? 'Gain' : 'Lose';
+    });
+    const [targetWeight, setTargetWeight] = useState<number>(() => {
+        return initialStored?.profile?.targetWeight ?? 70;
+    });
+    const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(() => {
+        if (initialStored?.weightHistory && initialStored.weightHistory.length > 0) {
+            return initialStored.weightHistory;
+        }
+        return tempWeightDataMonth;
+    });
 
+    // Real-time Heart Rate states directly from Firebase RTDB
+    const [realtimeHr, setRealtimeHr] = useState<RealtimeHeartRateData | null>(null);
+    const [realtimeRhr, setRealtimeRhr] = useState<RealtimeHeartRateData | null>(null);
+
+    // Subscribe to Real-time Heart Rate & Resting Heart Rate directly from Firebase RTDB
+    useEffect(() => {
+        const userId = dashboardData?.id || dashboardData?.profile?.id;
+        if (!userId) return;
+
+        const unsubscribeHr = subscribeToHeartRate(userId, (data) => {
+            if (data && data.bpm) {
+                setRealtimeHr(data);
+            }
+        });
+
+        const unsubscribeRhr = subscribeToRestingHeartRate(userId, (data) => {
+            if (data && data.bpm) {
+                setRealtimeRhr(data);
+            }
+        });
+
+        return () => {
+            unsubscribeHr();
+            unsubscribeRhr();
+        };
+    }, [dashboardData?.id, dashboardData?.profile?.id]);
+
+    // Sync all states when dashboardData changes
+    const applyDashboardData = useCallback((data: FullDashboardData) => {
+        setDashboardData(data);
+        if (data.profile) {
+            if (data.profile.targetWeight !== undefined && data.profile.targetWeight !== null) {
+                setTargetWeight(data.profile.targetWeight);
+            }
+            if (data.profile.fitnessGoal !== undefined && data.profile.fitnessGoal !== null) {
+                setGoalType(data.profile.fitnessGoal === 1 ? 'Gain' : 'Lose');
+            }
+        }
+        if (data.weightHistory && data.weightHistory.length > 0) {
+            setWeightDataMonth(data.weightHistory);
+        }
+    }, []);
+
+    // 2. Fetch fresh data from API /api/user/dashbroad on initial mount & page reloads
     useEffect(() => {
         let isMounted = true;
-        userService.getDashboardData()
-            .then(data => {
-                if (!isMounted) return;
-                setWeightDataMonth(data.weightDataMonth && data.weightDataMonth.length > 0 ? data.weightDataMonth : tempWeightDataMonth);
 
-                if (data.heartRateLogs && data.heartRateLogs.length > 0) {
-                    setHeartRateLogs(data.heartRateLogs);
+        userService.getDashboardData()
+            .then(freshData => {
+                if (!isMounted) return;
+
+                // Save fresh response to sessionStorage
+                try {
+                    sessionStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(freshData));
+                } catch (e) {
+                    console.warn('[Dashboard] Could not save fresh data to sessionStorage:', e);
                 }
-                if (data.sleepLogs) setSleepLogs(data.sleepLogs);
-                if (data.stepLogs) setStepLogs(data.stepLogs);
-                if (data.workoutLogs) setWorkoutLogs(data.workoutLogs);
-                if (data.foodIntakeLogs) setFoodIntakeLogs(data.foodIntakeLogs);
+
+                // Update UI states
+                applyDashboardData(freshData);
             })
             .catch(err => {
-                console.error("Failed to fetch dashboard data from API:", err);
-                if (!isMounted) return;
-
-                setWeightDataMonth(tempWeightDataMonth);
+                console.error('[Dashboard] Failed to fetch /api/user/dashbroad from API:', err);
             });
 
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [applyDashboardData]);
 
     const handleToggleTheme = () => {
         setIsDarkTheme((prev) => {
@@ -106,52 +162,101 @@ export default function Dashboard() {
         });
     };
 
-    const currentWeight = 56.0;
+    // 3. Handle saving Target & Goal with Optimistic UI + SessionStorage + Silent Background PUT Request
+    const handleSaveGoal = async () => {
+        const newGoal = goalType === 'Lose' ? 0 : 1;
+        const newTarget = Number(targetWeight);
+
+        // A. Immediately update UI state and close modal (Zero delay)
+        setGoalModalOpen(false);
+
+        // B. Immediately update sessionStorage
+        try {
+            const stored = getStoredDashboard() || dashboardData;
+            if (stored) {
+                const updated: FullDashboardData = {
+                    ...stored,
+                    profile: {
+                        ...stored.profile,
+                        targetWeight: newTarget,
+                        fitnessGoal: newGoal
+                    }
+                };
+                sessionStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(updated));
+                setDashboardData(updated);
+            }
+        } catch (e) {
+            console.warn('[Dashboard] Error updating sessionStorage:', e);
+        }
+
+        // C. Send background PUT request to API ngầm (No page refresh)
+        try {
+            await userService.updateProfile({
+                targetWeight: newTarget,
+                fitnessGoal: newGoal
+            });
+            console.log('[Dashboard] Target updated in background successfully.');
+        } catch (err) {
+            console.error('[Dashboard Error] Failed to update target in background:', err);
+        }
+    };
 
     const currentDate = language === 'vi'
         ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
         : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    // Compute newest heart rate in the database, separating Normal and Resting
-    const latestHr: HeartRateItem | null = heartRateLogs.length > 0 ? heartRateLogs[0] : null;
+    // Extract metrics & values from dashboardData
+    const currentWeight = dashboardData?.metrics?.weight ?? 70.0;
+    const stepsGoal = dashboardData?.profile?.targetSteps ?? 10000;
+    const stepsCurrent = dashboardData?.steps?.totalSteps ?? 0;
 
-    let normalBpm = 78;
-    let restingBpm = 62;
+    // Active calories: from steps or workout sessions
+    const activeCaloriesBurned = dashboardData?.steps?.totalSteps
+        ? Math.round(dashboardData.steps.totalSteps * 0.04)
+        : 640;
 
-    const normalLog = heartRateLogs.find(log => log.status?.toLowerCase() === 'normal')
-        || heartRateLogs.find(log => log.status?.toLowerCase() !== 'resting');
-
-    const restingLog = heartRateLogs.find(log => log.status?.toLowerCase() === 'resting')
-        || heartRateLogs.find(log => log.restingBpm && log.restingBpm > 0);
-
-    if (normalLog) {
-        normalBpm = normalLog.bpm;
-    } else if (latestHr) {
-        normalBpm = latestHr.bpm;
-    }
-
-    if (restingLog) {
-        restingBpm = restingLog.status?.toLowerCase() === 'resting' ? restingLog.bpm : (restingLog.restingBpm || 62);
-    } else if (latestHr?.restingBpm) {
-        restingBpm = latestHr.restingBpm;
-    }
-
+    // Heart rate values (Prioritizing direct Real-time stream from Firebase RTDB)
+    const normalBpm = realtimeHr?.bpm ?? dashboardData?.heartRate?.bpm ?? 78;
+    const restingBpm = realtimeRhr?.bpm ?? dashboardData?.restingHeartRate?.bpm ?? 58;
     const displayNormalBpm = `${normalBpm} bpm`;
     const displayRestingBpm = `${restingBpm} bpm`;
 
-    // Sleep, Step & Calorie derived stats
-    const latestSleep = sleepLogs.length > 0 ? sleepLogs[0] : null;
-    const displaySleepValue = latestSleep ? latestSleep.durationDisplay : "7 h 23 m";
-    const displaySleepQuality = latestSleep && latestSleep.sleepQuality ? `${latestSleep.sleepQuality}%` : "85%";
+    // Sleep stats
+    const displaySleepValue = dashboardData?.sleep?.durationDisplay || '7 h 45 m';
+    const displaySleepQuality = dashboardData?.sleep?.sleepEfficiency
+        ? `${dashboardData.sleep.sleepEfficiency}%`
+        : '85%';
 
-    const latestStep = stepLogs.length > 0 ? stepLogs[0] : null;
+    // Nutrition stats
+    const totalIn = dashboardData?.nutrition?.calories
+        ? Math.round(dashboardData.nutrition.calories)
+        : 0;
 
-    const activeCaloriesBurned = workoutLogs.length > 0
-        ? Math.round(workoutLogs.reduce((acc, w) => acc + w.caloriesBurned, 0))
-        : 640;
-    const totalIn = foodIntakeLogs.length > 0
-        ? Math.round(foodIntakeLogs.reduce((acc, f) => acc + f.calories, 0))
-        : 2400;
+    // Activity Day data mapped from step intervals
+    const activityDataDay: ActivityItem[] = dashboardData?.steps?.intervals && dashboardData.steps.intervals.length > 0
+        ? dashboardData.steps.intervals.map(i => ({
+            time: i.timeLabel,
+            cal: Math.round(i.steps * 0.04)
+        }))
+        : [
+            { time: '6AM', cal: 50 }, { time: '9AM', cal: 140 }, { time: '12PM', cal: 230 },
+            { time: '3PM', cal: 320 }, { time: '6PM', cal: 420 }, { time: '9PM', cal: 490 }
+        ];
+
+    // Gym workout week sessions mapped from workoutLogs
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const gymWorkoutData: GymWorkoutSession[] = dayNames.map(day => {
+        const fullDayName = {
+            'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
+            'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
+        }[day] || day;
+        const entry = dashboardData?.workoutLogs ? dashboardData.workoutLogs[fullDayName] : undefined;
+        return {
+            day,
+            mins: entry ? 60 : 0,
+            active: Boolean(entry)
+        };
+    });
 
     return (
         <div
@@ -176,25 +281,43 @@ export default function Dashboard() {
                     {/* Movement card — 3/5 width */}
                     <div className="stats-grid-movement">
                         <MovementCard
-                            stepsGoal={latestStep ? latestStep.targetSteps : 10000}
-                            stepsCurrent={latestStep ? latestStep.steps : 12456}
+                            stepsGoal={stepsGoal}
+                            stepsCurrent={stepsCurrent}
                             caloriesBurned={activeCaloriesBurned}
+                            gymWorkoutData={gymWorkoutData}
                         />
                     </div>
                     {/* Right stacked — 2/5 width */}
                     <div className="stats-grid-side">
                         <StatCard
                             icon={<Heart size={20} />}
-                            label={t('dashboard.heartRate') || 'Heart Rate'}
-                            value={displayNormalBpm || '117 bpm'}
-                            subValue={t('dashboard.resting', { val: displayRestingBpm }) || 'Resting: 62 bpm'}
+                            label={
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                    {t('dashboard.heartRate') || 'Heart Rate'}
+                                    {realtimeHr && (
+                                        <span
+                                            style={{
+                                                display: 'inline-block',
+                                                width: '7px',
+                                                height: '7px',
+                                                borderRadius: '50%',
+                                                backgroundColor: '#10b981',
+                                                boxShadow: '0 0 6px #10b981'
+                                            }}
+                                            title="Live Realtime"
+                                        />
+                                    )}
+                                </span>
+                            }
+                            value={displayNormalBpm}
+                            subValue={t('dashboard.resting', { val: displayRestingBpm }) || `Resting: ${displayRestingBpm}`}
                             badgeColorClass="badge-rose"
                         />
                         <StatCard
                             icon={<Moon size={20} />}
                             label={t('dashboard.sleep') || 'Sleep'}
-                            value={displaySleepValue || '7 h 23 m'}
-                            subValue={t('dashboard.sleepQuality', { val: displaySleepQuality }) || 'Quality: 85%'}
+                            value={displaySleepValue}
+                            subValue={t('dashboard.sleepQuality', { val: displaySleepQuality }) || `Quality: ${displaySleepQuality}`}
                             badgeColorClass="badge-indigo"
                         />
                         <NutritionMiniCard caloriesIn={totalIn} />
@@ -206,7 +329,7 @@ export default function Dashboard() {
                     <div className="charts-col">
 
                         {/* Activity Chart */}
-                        <ActivityChart />
+                        <ActivityChart activityDataDay={activityDataDay} />
 
                         {/* Weight Progress (with Line Chart and Circle) */}
                         <div className="card-panel">
@@ -304,7 +427,7 @@ export default function Dashboard() {
                             />
                         </div>
 
-                        <button className="btn-primary" onClick={() => setGoalModalOpen(false)}>
+                        <button className="btn-primary" onClick={handleSaveGoal}>
                             {t('dashboard.saveChanges')}
                         </button>
                     </div>
@@ -316,4 +439,3 @@ export default function Dashboard() {
         </div>
     );
 }
-

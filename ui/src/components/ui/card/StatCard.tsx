@@ -3,7 +3,7 @@ import './StatCard.css';
 
 export interface StatCardProps {
     icon: ReactNode;
-    label: string;
+    label: ReactNode;
     value: string;
     subValue: string;
     badgeColorClass?: string;

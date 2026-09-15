@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from flask import Flask
 
 from models import (
-    db, User, UserInfo, BodyConditionLog, HeartRateLog, RestingHeartRateLog,
+    db, User, UserInfo, BodyConditionLog,
     SleepLog, StepLog, WorkoutPlan, WorkoutLog, MealLog
 )
 
@@ -188,7 +188,7 @@ class TestModels(unittest.TestCase):
 
         full_data = user.get_full_data()
         expected_keys = {
-            'profile', 'metrics', 'heartRate', 'restingHeartRate',
+            'profile', 'metrics',
             'sleep', 'steps', 'workoutLogs', 'nutrition', 'weightHistory'
         }
         self.assertTrue(expected_keys.issubset(set(full_data.keys())))

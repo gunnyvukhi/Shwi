@@ -79,29 +79,21 @@ class TestUserRoutes(unittest.TestCase):
         self.assertGreater(len(get_data['bodyConditionLogs']), 0)
 
         # DELETE body condition
-        log_id = BodyConditionLog.query.filter_by(user_id=self.user.id).first().id
-        res_del = self.client.delete(f'/api/user/body-condition/{log_id}', headers=self.headers)
+        log = BodyConditionLog.query.filter_by(user_id=self.user.id).first()
+        assert log is not None
+        res_del = self.client.delete(f'/api/user/body-condition/{log.id}', headers=self.headers)
         self.assertEqual(res_del.status_code, 200)
 
     def test_heart_rate_endpoints(self):
-        # POST heart rate
+        # POST heart rate (Backend handles database update)
         res = self.client.post('/api/user/heart-rate', headers=self.headers, json={'bpm': 75})
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res.get_json()['log']['bpm'], 75)
 
-        # GET heart rate
-        res_get = self.client.get('/api/user/heart-rate', headers=self.headers)
-        self.assertEqual(res_get.status_code, 200)
-        self.assertEqual(len(res_get.get_json()['heartRateLogs']), 1)
-
-        # POST resting heart rate
+        # POST resting heart rate (Backend handles database update)
         res_rhr = self.client.post('/api/user/resting-heart-rate', headers=self.headers, json={'bpm': 58})
         self.assertEqual(res_rhr.status_code, 201)
-
-        # GET resting heart rate
-        res_rhr_get = self.client.get('/api/user/resting-heart-rate', headers=self.headers)
-        self.assertEqual(res_rhr_get.status_code, 200)
-        self.assertEqual(len(res_rhr_get.get_json()['restingHeartRateLogs']), 1)
+        self.assertEqual(res_rhr.get_json()['log']['bpm'], 58)
 
     def test_sleep_endpoints(self):
         res = self.client.post('/api/user/sleep', headers=self.headers, json={
@@ -201,8 +193,6 @@ class TestUserRoutes(unittest.TestCase):
         # Check that new models structure is present
         self.assertIn('profile', data)
         self.assertIn('metrics', data)
-        self.assertIn('heartRate', data)
-        self.assertIn('restingHeartRate', data)
         self.assertIn('sleep', data)
         self.assertIn('steps', data)
         self.assertIn('workoutLogs', data)

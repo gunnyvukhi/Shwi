@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
-from models import db, HeartRateLog, RestingHeartRateLog
+import firebase_service
 from utils import token_required
 
 heart_rate_bp = Blueprint('heart_rate', __name__)
@@ -29,23 +29,21 @@ def handle_heart_rate(current_user):
             except Exception:
                 pass
 
-        log = HeartRateLog(
+        log_data = firebase_service.save_heart_rate(
             user_id=current_user.id,
             bpm=bpm_val,
             recorded_at=recorded_at or datetime.now(timezone.utc)
         )
-        db.session.add(log)
-        db.session.commit()
-        return jsonify({'message': 'Heart rate logged successfully', 'log': log.to_dict()}), 201
+        return jsonify({
+            'message': 'Heart rate logged successfully',
+            'log': log_data,
+            'heartRate': log_data
+        }), 201
 
-    limit = request.args.get('limit', 50, type=int)
-    logs = HeartRateLog.query.filter_by(user_id=current_user.id).order_by(
-        HeartRateLog.recorded_at.desc(),
-        HeartRateLog.id.desc()
-    ).limit(limit).all()
     return jsonify({
-        'heartRateLogs': [item.to_dict() for item in logs],
-        'latestHeartRate': current_user.latest_heart_rate
+        'message': 'Heart rate is streamed directly via Firebase RTDB',
+        'heartRateLogs': [],
+        'latestHeartRate': {}
     }), 200
 
 
@@ -73,21 +71,19 @@ def handle_resting_heart_rate(current_user):
             except Exception:
                 pass
 
-        log = RestingHeartRateLog(
+        log_data = firebase_service.save_resting_heart_rate(
             user_id=current_user.id,
             bpm=bpm_val,
             recorded_at=recorded_at or datetime.now(timezone.utc)
         )
-        db.session.add(log)
-        db.session.commit()
-        return jsonify({'message': 'Resting heart rate logged successfully', 'log': log.to_dict()}), 201
+        return jsonify({
+            'message': 'Resting heart rate logged successfully',
+            'log': log_data,
+            'restingHeartRate': log_data
+        }), 201
 
-    limit = request.args.get('limit', 50, type=int)
-    logs = RestingHeartRateLog.query.filter_by(user_id=current_user.id).order_by(
-        RestingHeartRateLog.recorded_at.desc(),
-        RestingHeartRateLog.id.desc()
-    ).limit(limit).all()
     return jsonify({
-        'restingHeartRateLogs': [item.to_dict() for item in logs],
-        'latestRestingHeartRate': current_user.latest_resting_heart_rate
+        'message': 'Resting heart rate is streamed directly via Firebase RTDB',
+        'restingHeartRateLogs': [],
+        'latestRestingHeartRate': {}
     }), 200

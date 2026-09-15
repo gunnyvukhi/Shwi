@@ -2,7 +2,8 @@ import base64
 from datetime import datetime, timezone
 import requests
 from flask import Blueprint, request, jsonify, current_app
-from models import db, BodyConditionLog, RestingHeartRateLog
+from models import db, BodyConditionLog
+import firebase_service
 from utils import token_required
 
 profile_bp = Blueprint('profile', __name__)
@@ -178,11 +179,10 @@ def update_profile(current_user):
         try:
             rhr_val = int(data['rhr']) if data['rhr'] is not None else None
             if rhr_val is not None:
-                new_rhr_log = RestingHeartRateLog(
+                firebase_service.save_resting_heart_rate(
                     user_id=current_user.id,
                     bpm=rhr_val
                 )
-                db.session.add(new_rhr_log)
         except (ValueError, TypeError):
             pass
 
