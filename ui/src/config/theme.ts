@@ -34,26 +34,28 @@ export const theme = {
 
 	// Dashboard & App Dark Mode Theme
 	dark: {
-		bgMain: '#09090b',
-		bgCard: 'rgba(24, 24, 27, 0.6)',
-		bgCardSolid: '#18181b',
+		bgMain: '#0a0a0f',
+		bgCard: 'rgba(20,20,30,0.65)',
+		bgCardSolid: '#14141e',
 		textMain: '#fafafa',
 		textMuted: '#a1a1aa',
 		borderColor: '#27272a',
 		primary: '#38bdf8',
 		primaryHover: '#7dd3fc',
-		navBg: 'rgba(9, 9, 11, 0.85)',
+		navBg: 'rgba(10,10,15,0.88)',
 		gridLine: '#27272a',
 		chartText: '#71717a',
 		svgStroke: '#27272a',
 		danger: '#f87171',
-		cardShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)'
+		cardShadow: '0 10px 30px -8px rgba(0, 0, 0, 0.5)',
+		accentGlow: 'rgba(56, 189, 248, 0.12)',
+		bgDepth1: 'rgba(255, 255, 255, 0.03)',
 	},
 
 	// Dashboard & App Light Mode Theme
 	light: {
-		bgMain: '#e2e8f0',
-		bgCard: 'rgba(255, 255, 255, 0.96)',
+		bgMain: '#f0f4f8',
+		bgCard: 'rgba(255, 255, 255, 0.92)',
 		bgCardSolid: '#ffffff',
 		textMain: '#0f172a',
 		textMuted: '#475569',
@@ -65,7 +67,9 @@ export const theme = {
 		chartText: '#64748b',
 		svgStroke: '#94a3b8',
 		danger: '#dc2626',
-		cardShadow: '0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04)'
+		cardShadow: '0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04)',
+		accentGlow: 'rgba(2, 132, 199, 0.08)',
+		bgDepth1: 'rgba(15, 23, 42, 0.03)',
 	}
 } as const;
 
@@ -85,7 +89,9 @@ export function getThemeStyles(isDark: boolean): CSSProperties {
 		'--chart-text': currentTheme.chartText,
 		'--svg-stroke': currentTheme.svgStroke,
 		'--danger': currentTheme.danger,
-		'--card-shadow': currentTheme.cardShadow
+		'--card-shadow': currentTheme.cardShadow,
+		'--accent-glow': currentTheme.accentGlow,
+		'--bg-depth-1': currentTheme.bgDepth1,
 	} as CSSProperties;
 }
 

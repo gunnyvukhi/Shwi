@@ -771,7 +771,6 @@ class SleepLog(db.Model):
     deep_sleep_minutes = db.Column(db.Integer, nullable=True)
     rem_sleep_minutes = db.Column(db.Integer, nullable=True)
     light_sleep_minutes = db.Column(db.Integer, nullable=True)
-    time_label = db.Column(db.String(50), nullable=True)  # e.g. 'Mon', '2026-09-06'
     sleep_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -801,7 +800,6 @@ class SleepLog(db.Model):
             'deepSleepMinutes': self.deep_sleep_minutes,
             'remSleepMinutes': self.rem_sleep_minutes,
             'lightSleepMinutes': self.light_sleep_minutes,
-            'timeLabel': self.time_label
         }
 
 class MealLog(db.Model):

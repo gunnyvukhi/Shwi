@@ -7,7 +7,7 @@ from .sleep import sleep_bp
 from .steps import steps_bp
 from .workout import workout_bp
 from .meal import meal_bp
-from .dashbroad import dashbroad_bp
+from .core import core_bp
 
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 
@@ -19,4 +19,4 @@ user_bp.register_blueprint(sleep_bp)
 user_bp.register_blueprint(steps_bp)
 user_bp.register_blueprint(workout_bp)
 user_bp.register_blueprint(meal_bp)
-user_bp.register_blueprint(dashbroad_bp)
+user_bp.register_blueprint(core_bp)

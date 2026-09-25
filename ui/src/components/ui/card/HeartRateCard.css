@@ -1,0 +1,390 @@
+/* ==========================================================================
+   Heart Rate Card Component (.heart-rate-card)
+   ========================================================================== */
+
+.heart-rate-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 1.25rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    padding: 1.25rem 1.5rem;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    flex: 1;
+    min-height: 180px;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .heart-rate-card {
+        padding: 1.5rem;
+    }
+}
+
+.heart-rate-card:hover {
+    background-color: var(--bg-card-solid);
+    border-color: rgba(244, 63, 94, 0.35);
+    box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.1), 0 8px 32px -4px rgba(244, 63, 94, 0.1);
+    transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .heart-rate-card:hover {
+        transform: none;
+    }
+    .ecg-line {
+        animation: none;
+    }
+    .sleep-icon-moon {
+        animation: none;
+    }
+}
+
+/* Header */
+.heart-rate-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.heart-rate-header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Beating Icon Badge */
+.heart-rate-icon-badge {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.2) 0%, rgba(244, 63, 94, 0.08) 100%);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    color: #f43f5e;
+    position: relative;
+    box-shadow: 0 0 12px rgba(244, 63, 94, 0.15);
+}
+
+.heart-icon-beating {
+    animation: hrPulse 1.2s ease-in-out infinite;
+    transform-origin: center center;
+}
+
+@keyframes hrPulse {
+    0% {
+        transform: scale(1);
+    }
+    14% {
+        transform: scale(1.22);
+    }
+    28% {
+        transform: scale(1);
+    }
+    42% {
+        transform: scale(1.15);
+    }
+    70% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.heart-rate-title-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.heart-rate-title {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+    .heart-rate-title {
+        font-size: 0.95rem;
+    }
+}
+
+.heart-rate-subtitle {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* LIVE Indicator Badge */
+.heart-rate-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #10b981;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.live-dot-wrap {
+    position: relative;
+    display: inline-flex;
+    width: 6px;
+    height: 6px;
+}
+
+.live-dot-ping {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: #10b981;
+    opacity: 0.75;
+    animation: livePing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.live-dot-core {
+    position: relative;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+@keyframes livePing {
+    75%, 100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+/* Main Value & Zone Row */
+.heart-rate-metric-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0.25rem 0 0.5rem 0;
+}
+
+.heart-rate-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.heart-rate-bpm-number {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-main);
+    line-height: 1;
+    font-family: 'Barlow Condensed', sans-serif;
+}
+
+@media (min-width: 640px) {
+    .heart-rate-bpm-number {
+        font-size: 2.75rem;
+    }
+}
+
+.heart-rate-bpm-unit {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* Zone Tag Badge */
+.heart-rate-zone-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+}
+
+.zone-none {
+    background-color: var(--bg-main);
+    color: var(--text-muted);
+    border-color: var(--border-color);
+}
+
+.zone-resting {
+    background-color: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+.zone-normal {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.zone-fatburn {
+    background-color: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.25);
+}
+
+.zone-cardio {
+    background-color: rgba(249, 115, 22, 0.12);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.25);
+}
+
+.zone-peak {
+    background-color: rgba(244, 63, 94, 0.15);
+    color: #f43f5e;
+    border-color: rgba(244, 63, 94, 0.3);
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.2);
+}
+
+/* ECG / Pulse Wave Area */
+.heart-rate-wave-box {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    margin: 0.25rem 0 0.75rem 0;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: radial-gradient(ellipse at 50% 100%, rgba(244, 63, 94, 0.06) 0%, transparent 70%);
+}
+
+.heart-rate-wave-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.ecg-line-bg {
+    fill: none;
+    stroke: rgba(244, 63, 94, 0.16);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ecg-line {
+    fill: none;
+    stroke: #f43f5e;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.75));
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: ecgFlow 2.5s ease-in-out infinite;
+}
+
+.ecg-grid-line {
+    stroke: var(--border-color);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+    opacity: 0.35;
+}
+
+@keyframes ecgFlow {
+    0% {
+        stroke-dashoffset: 100;
+    }
+    85% {
+        stroke-dashoffset: -100;
+    }
+    100% {
+        stroke-dashoffset: -100;
+    }
+}
+
+/* Footer & Comparison Row */
+.heart-rate-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+    gap: 0.75rem;
+}
+
+.heart-rate-resting-box {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.heart-rate-resting-label {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.heart-rate-resting-val {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+/* Multi-Zone Spectrum Bar */
+.heart-rate-spectrum {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    max-width: 110px;
+}
+
+.spectrum-segment {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background-color: var(--border-color);
+    transition: all 0.3s ease;
+    opacity: 0.35;
+}
+
+.spectrum-segment.active {
+    opacity: 1;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.spectrum-seg-1.active { background-color: #38bdf8; color: #38bdf8; }
+.spectrum-seg-2.active { background-color: #34d399; color: #34d399; }
+.spectrum-seg-3.active { background-color: #fbbf24; color: #fbbf24; }
+.spectrum-seg-4.active { background-color: #fb923c; color: #fb923c; }
+.spectrum-seg-5.active { background-color: #f43f5e; color: #f43f5e; }
+
+/* Theme adaptations for Light Mode */
+.theme-light .heart-rate-card {
+    background-color: var(--bg-card);
+}
+
+.theme-light .heart-rate-card:hover {
+    background-color: var(--bg-card-solid);
+}
+
+.theme-light .zone-none {
+    background-color: var(--bg-card-solid);
+}

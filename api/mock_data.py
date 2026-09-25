@@ -186,7 +186,8 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
 
     # 6. SleepLog (Chu kỳ ngủ đêm qua: 8PM hôm qua -> 8AM hôm nay)
     yesterday = today - timedelta(days=1)
-    sleep_dt = datetime(today.year, today.month, today.day, 7, 0, tzinfo=timezone.utc)
+    sleep_dt_yesterday = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 0, tzinfo=timezone.utc)
+    sleep_dt_today_nap = datetime(today.year, today.month, today.day, 13, 0, tzinfo=timezone.utc)
     db.session.add(SleepLog(
         user_id=user_id,
         duration_minutes=465,  # 7h 45m
@@ -195,8 +196,17 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
         deep_sleep_minutes=105,
         rem_sleep_minutes=115,
         light_sleep_minutes=245,
-        time_label='Today',
-        sleep_date=sleep_dt
+        sleep_date=sleep_dt_yesterday
+    ))
+    db.session.add(SleepLog(
+        user_id=user_id,
+        duration_minutes=45,
+        sleep_latency_minutes=5,
+        waso_minutes=5,
+        deep_sleep_minutes=5,
+        rem_sleep_minutes=5,
+        light_sleep_minutes=5,
+        sleep_date=sleep_dt_today_nap
     ))
 
     # 7. MealLog (4 bữa ăn hôm nay)
@@ -226,6 +236,6 @@ def seed_mock_logs(user_id: int, clear_existing: bool = True) -> dict:
         'stepLogs': len(step_intervals_data),
         'heartRateUpdated': True,
         'restingHeartRateUpdated': True,
-        'sleepLogs': 1,
+        'sleepLogs': 2,
         'mealLogs': len(meals_data)
     }

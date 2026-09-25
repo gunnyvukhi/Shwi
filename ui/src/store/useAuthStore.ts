@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { authService } from '../services/authService';
-import type { User } from '../services/authService';
+import { userService } from '../services/userService';
+import type { User } from '../types/user';
 
 interface AuthState {
   user: User | null;
@@ -15,7 +15,7 @@ interface AuthState {
 }
 
 const getInitialUser = (): User | null => {
-  const savedUser = localStorage.getItem('gym_auth_user');
+  const savedUser = sessionStorage.getItem('shwi_auth_user');
   if (savedUser) {
     try {
       return JSON.parse(savedUser);
@@ -26,7 +26,7 @@ const getInitialUser = (): User | null => {
   return null;
 };
 
-const savedToken = localStorage.getItem('gym_auth_token');
+const savedToken = localStorage.getItem('shwi_auth_token');
 const initialUser = getInitialUser();
 const hasSavedSession = Boolean(savedToken);
 
@@ -37,17 +37,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isInitializing: hasSavedSession,
 
   setAuth: (user, token) => {
-    localStorage.setItem('gym_auth_token', token);
-    localStorage.setItem('gym_auth_user', JSON.stringify(user));
+    sessionStorage.setItem('shwi_auth_user', JSON.stringify(user));
+    localStorage.setItem('shwi_auth_token', token);
     set({ user, token, isAuthenticated: true, isInitializing: false });
   },
 
   login: (userData, token) => {
     const activeToken = token || get().token;
     if (activeToken) {
-      localStorage.setItem('gym_auth_token', activeToken);
+      localStorage.setItem('shwi_auth_token', activeToken);
     }
-    localStorage.setItem('gym_auth_user', JSON.stringify(userData));
+    sessionStorage.setItem('shwi_auth_user', JSON.stringify(userData));
     set({
       user: userData,
       token: activeToken,
@@ -57,13 +57,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   updateUser: (userData) => {
-    localStorage.setItem('gym_auth_user', JSON.stringify(userData));
+    sessionStorage.setItem('shwi_auth_user', JSON.stringify(userData));
     set({ user: userData });
   },
 
   logout: () => {
-    localStorage.removeItem('gym_auth_token');
-    localStorage.removeItem('gym_auth_user');
+    localStorage.removeItem('shwi_auth_token');
+    sessionStorage.removeItem('shwi_auth_user');
     set({
       user: null,
       token: null,
@@ -73,25 +73,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     if (!token) {
       set({ isInitializing: false, isAuthenticated: false, user: null, token: null });
       return;
     }
 
     try {
-      const user = await authService.getMe(token);
-      localStorage.setItem('gym_auth_user', JSON.stringify(user));
+      const user = await userService.getMe();
+      sessionStorage.setItem('shwi_auth_user', JSON.stringify(user));
       set({
-        user,
+        user: user,
         token,
         isAuthenticated: true,
         isInitializing: false,
       });
     } catch (err: any) {
       if (err.status === 401) {
-        localStorage.removeItem('gym_auth_token');
-        localStorage.removeItem('gym_auth_user');
+        localStorage.removeItem('shwi_auth_token');
+        sessionStorage.removeItem('shwi_auth_user');
         set({
           user: null,
           token: null,

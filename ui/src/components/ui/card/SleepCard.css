@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Sleep Card Component (.sleep-card)
+   Aesthetic Health Tracking Card for Sleep Metrics & Stages
+   ========================================================================== */
+
+.sleep-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 1.25rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    padding: 1.25rem 1.5rem;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    flex: 1;
+    min-height: 160px;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .sleep-card {
+        padding: 1.5rem;
+    }
+}
+
+.sleep-card:hover {
+    background-color: var(--bg-card-solid);
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1), 0 8px 32px -4px rgba(99, 102, 241, 0.12);
+    transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sleep-card:hover {
+        transform: none;
+    }
+}
+
+/* Header */
+.sleep-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.sleep-header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Glowing Icon Badge */
+.sleep-icon-badge {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.08) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    color: #818cf8;
+    position: relative;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+}
+
+.sleep-icon-moon {
+    animation: sleepGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes sleepGlow {
+    0% {
+        transform: rotate(-4deg) scale(1);
+        filter: drop-shadow(0 0 2px rgba(129, 140, 248, 0.4));
+    }
+
+    100% {
+        transform: rotate(4deg) scale(1.08);
+        filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.8));
+    }
+}
+
+.sleep-title-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.sleep-title {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
+}
+
+.sleep-subtitle {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Quality Tag Badge */
+.sleep-quality-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+}
+
+.sleep-quality-optimal {
+    background-color: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+}
+
+.sleep-quality-good {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.sleep-quality-fair {
+    background-color: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.25);
+}
+
+.sleep-quality-poor {
+    background-color: rgba(244, 63, 94, 0.12);
+    color: #f43f5e;
+    border-color: rgba(244, 63, 94, 0.25);
+}
+
+/* Main Metric Row */
+.sleep-metric-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0.25rem 0 0.5rem 0;
+}
+
+.sleep-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.sleep-duration-number {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-main);
+    line-height: 1;
+    font-family: 'Barlow Condensed', sans-serif;
+}
+
+@media (min-width: 640px) {
+    .sleep-duration-number {
+        font-size: 2.75rem;
+    }
+}
+
+.sleep-efficiency-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.sleep-efficiency-val {
+    color: #818cf8;
+    font-weight: 700;
+}
+
+/* Sleep Stage Spectrum Bar */
+.sleep-spectrum-wrap {
+    margin: 0.5rem 0 0.75rem 0;
+}
+
+.sleep-spectrum-bar {
+    display: flex;
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
+    overflow: hidden;
+    gap: 2px;
+    background-color: var(--border-color);
+}
+
+.sleep-segment {
+    height: 100%;
+    border-radius: 3px;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+    cursor: default;
+}
+
+.sleep-segment:hover {
+    filter: brightness(1.2);
+}
+
+.sleep-seg-deep {
+    background-color: #4f46e5;
+}
+
+.sleep-seg-rem {
+    background-color: #818cf8;
+}
+
+.sleep-seg-light {
+    background-color: #c7d2fe;
+}
+
+.sleep-seg-awake {
+    background-color: #fcd34d;
+}
+
+/* Footer Breakdown Row */
+.sleep-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--border-color);
+    gap: 1.25rem;
+}
+
+.sleep-footer-notes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.sleep-note-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.sleep-note-icon {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+.sleep-note-label {
+    color: var(--text-muted);
+}
+
+.sleep-note-val {
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+.sleep-note-separator {
+    color: var(--border-color);
+    opacity: 0.8;
+    font-size: 0.625rem;
+}
+
+.sleep-stage-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.sleep-stage-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.sleep-stage-val {
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+.dot-deep {
+    background-color: #4f46e5;
+    box-shadow: 0 0 4px #4f46e5;
+}
+
+.dot-rem {
+    background-color: #818cf8;
+    box-shadow: 0 0 4px #818cf8;
+}
+
+.dot-light {
+    background-color: #c7d2fe;
+    box-shadow: 0 0 4px #c7d2fe;
+}
+
+.dot-awake {
+    background-color: #fcd34d;
+    box-shadow: 0 0 4px #fcd34d;
+}

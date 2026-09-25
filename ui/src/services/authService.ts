@@ -1,38 +1,7 @@
+
 const API_BASE = `${import.meta.env.VITE_API_URL}/auth`;
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'user';
-  isVerified?: boolean;
-  avatarUrl?: string;
-  wallpaperUrl?: string;
-  bio?: string;
-  fitnessGoal?: number | string;
-  targetWeight?: number;
-  targetSteps?: number;
-  currentWeight?: number;
-  height?: number;
-  gender?: number | string;
-  phone?: string;
-  yob?: number;
-  age?: number;
-  bodyFat?: number;
-  rhr?: number;
-  createdAt?: string;
-}
-
-export interface AuthResponse {
-  message: string;
-  token?: string;
-  user?: User;
-  resetToken?: string;
-  requireOtp?: boolean;
-  requireVerification?: boolean;
-  email?: string;
-  error?: string;
-}
+import type { AuthResponse } from '../types/auth';
 
 export const authService = {
   async register(name: string, email: string, password: string): Promise<AuthResponse> {
@@ -156,21 +125,4 @@ export const authService = {
     }
     return data;
   },
-
-  async getMe(token: string): Promise<User> {
-    const res = await fetch(`${API_BASE}/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      const err: any = new Error(data.error || 'Failed to authenticate token');
-      err.status = res.status;
-      throw err;
-    }
-    return data.user;
-  }
 };

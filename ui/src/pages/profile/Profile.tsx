@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Profile.css';
 import Header from '../../components/layout/Header';
 import MobileNav from '../../components/layout/MobileNav';
 import { getThemeStyles } from '../../config/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import { userService } from '../../services/userService';
 import {
   Camera,
@@ -25,13 +26,11 @@ import {
 
 export default function Profile() {
   const { t } = useLanguage();
-  const user = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
+  // const user = useAuthStore((state: any) => state.user);
+  const updateUser = useAuthStore((state: any) => state.updateUser);
 
-  const [isDarkTheme, setIsDarkTheme] = useState(() => {
-    const saved = localStorage.getItem('shwi_theme');
-    return saved !== null ? saved === 'dark' : true;
-  });
+  const isDarkTheme = useThemeStore((state) => state.isDarkTheme);
+  const handleToggleTheme = useThemeStore((state) => state.toggleTheme);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'workouts' | 'metrics' | 'settings'>('overview');
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -53,31 +52,7 @@ export default function Profile() {
     rhr: 58
   });
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        bio: user.bio || '',
-        fitnessGoal: user.fitnessGoal !== undefined ? (user.fitnessGoal === 1 ? 'Gain Weight' : (user.fitnessGoal === 0 ? 'Lose Weight' : String(user.fitnessGoal))) : 'Lose Weight',
-        height: user.height || 175,
-        currentWeight: user.currentWeight || 70,
-        targetWeight: user.targetWeight || 65,
-        gender: user.gender !== undefined ? (user.gender === 1 ? 'Female' : (user.gender === 2 ? 'Other' : (user.gender === 0 ? 'Male' : String(user.gender)))) : 'Male',
-        phone: user.phone || '',
-        yob: user.yob || (user.age ? new Date().getFullYear() - user.age : 2000),
-        bodyFat: user.bodyFat || 14.5,
-        rhr: user.rhr || 58
-      });
-    }
-  }, [user]);
 
-  const handleToggleTheme = () => {
-    setIsDarkTheme((prev) => {
-      const next = !prev;
-      localStorage.setItem('shwi_theme', next ? 'dark' : 'light');
-      return next;
-    });
-  };
 
   const showToast = (type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text });
@@ -128,10 +103,6 @@ export default function Profile() {
   const calculatedAge = formData.yob ? new Date().getFullYear() - formData.yob : 25;
   const bmrEst = Math.round(10 * currentW + 6.25 * currentH - 5 * calculatedAge + (formData.gender === 'Male' ? 5 : -161));
 
-  const formattedJoinedDate = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : 'Jan 2026';
-
   const personalBests = [
     { lift: 'Bench Press', weight: '100 kg', date: 'Oct 14, 2026' },
     { lift: 'Barbell Squat', weight: '140 kg', date: 'Oct 02, 2026' },
@@ -171,7 +142,6 @@ export default function Profile() {
           <div className="profile-cover-wrap">
             <img
               src={
-                user?.wallpaperUrl ||
                 "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1600&h=500"
               }
               alt="Cover Wallpaper"
@@ -194,7 +164,6 @@ export default function Profile() {
               <div className="profile-avatar-wrapper">
                 <img
                   src={
-                    user?.avatarUrl ||
                     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256"
                   }
                   alt="Avatar"
@@ -215,11 +184,11 @@ export default function Profile() {
                 <div className="profile-name-row">
                   <div>
                     <h1 className="profile-display-name">
-                      {user?.name || 'Athlete Name'}
-                      <span className="profile-role-tag">{user?.role || 'Athlete'}</span>
+                      {/* {user?.name || 'Athlete Name'} */}
+                      {/* <span className="profile-role-tag">{user?.role || 'Athlete'}</span> */}
                     </h1>
                     <div className="profile-user-handle">
-                      {user?.email} · {t('profile.joined')}: {formattedJoinedDate}
+                      {/* {user?.email} · {t('profile.joined')}: {formattedJoinedDate} */}
                     </div>
                   </div>
 
@@ -230,7 +199,7 @@ export default function Profile() {
                 </div>
 
                 <p className="profile-bio-description">
-                  {user?.bio || t('profile.bioPlaceholder')}
+                  {/* {user?.bio || t('profile.bioPlaceholder')} */}
                 </p>
               </div>
             </div>
@@ -405,11 +374,11 @@ export default function Profile() {
 
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">Full Name</span>
-                  <span className="profile-detail-val">{user?.name || 'N/A'}</span>
+                  {/* <span className="profile-detail-val">{user?.name || 'N/A'}</span> */}
                 </div>
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">Email</span>
-                  <span className="profile-detail-val">{user?.email}</span>
+                  {/* <span className="profile-detail-val">{user?.email}</span> */}
                 </div>
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">Phone</span>
@@ -525,14 +494,14 @@ export default function Profile() {
             <div className="profile-settings-form">
               <div className="profile-form-group">
                 <label className="profile-input-label">Account Email</label>
-                <input type="text" className="profile-text-input" value={user?.email || ''} readOnly />
+                {/* <input type="text" className="profile-text-input" value={user?.email || ''} readOnly /> */}
               </div>
               <div className="profile-form-group">
                 <label className="profile-input-label">Account Verification</label>
                 <input
                   type="text"
                   className="profile-text-input"
-                  value={user?.isVerified ? 'Verified' : 'Unverified'}
+                  // value={user?.isVerified ? 'Verified' : 'Unverified'}
                   readOnly
                   style={{ color: '#10b981' }}
                 />

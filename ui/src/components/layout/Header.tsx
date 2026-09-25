@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import ShwiIcon from '../ui/icon/ShwiIcon';
 import LanguageToggle from '../ui/button/LanguageToggle';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore, useThemeStore } from '../../store';
 import { PATHS } from '../../routes/paths';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -23,12 +23,21 @@ interface HeaderProps {
 }
 
 export default function Header({
-    isDarkTheme = true,
-    onToggleTheme,
+    isDarkTheme: propIsDarkTheme,
+    onToggleTheme: propOnToggleTheme,
     activeNav = 'Dashboard'
 }: HeaderProps) {
+    // Lấy dữ liệu theme từ store
+    const storeTheme = useThemeStore((state) => state.isDarkTheme);
+    const storeToggleTheme = useThemeStore((state) => state.toggleTheme);
+    // nếu có prop thì dùng prop, ngược lại thì lấy dữ liệu trong store
+    const isDarkTheme = propIsDarkTheme !== undefined ? propIsDarkTheme : storeTheme;
+    const onToggleTheme = propOnToggleTheme || storeToggleTheme;
+
+    // Lấy dữ liệu user từ store
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+
     const navigate = useNavigate();
     const { t } = useLanguage();
 
@@ -100,7 +109,7 @@ export default function Header({
                         aria-label="User menu"
                     >
                         <img
-                            src={user?.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64"}
+                            src={user?.profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64"}
                             alt="User Avatar"
                         />
                     </button>
@@ -108,8 +117,8 @@ export default function Header({
                     {profileOpen && (
                         <div className="dropdown-menu" onMouseLeave={() => setProfileOpen(false)}>
                             <div className="dropdown-header" onClick={() => { setProfileOpen(false); navigate(PATHS.PROFILE); }} style={{ cursor: 'pointer' }}>
-                                <p className="dropdown-name">{user?.name || 'Jane Doe'}</p>
-                                <p className="dropdown-email">{user?.email || 'jane@example.com'}</p>
+                                <p className="dropdown-name">{user?.profile.name || 'Riku'}</p>
+                                <p className="dropdown-email">{user?.profile.email || 'NPC@shwi.com'}</p>
                             </div>
                             <div className="dropdown-divider"></div>
                             <button className="dropdown-item" onClick={() => { setProfileOpen(false); navigate(PATHS.PROFILE); }}>

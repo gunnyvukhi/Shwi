@@ -25,6 +25,7 @@ import {
 import { getThemeStyles } from '../../config/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import { PATHS } from '../../routes/paths';
 import LanguageToggle from '../../components/ui/button/LanguageToggle';
 import ShwiIcon from '../../components/ui/icon/ShwiIcon';
@@ -44,19 +45,9 @@ export default function Home() {
   const { t } = useLanguage();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  // Synchronized theme state matching Dashboard page
-  const [isDarkTheme, setIsDarkTheme] = useState(() => {
-    const saved = localStorage.getItem('shwi_theme');
-    return saved !== null ? saved === 'dark' : true;
-  });
-
-  const handleToggleTheme = () => {
-    setIsDarkTheme((prev) => {
-      const next = !prev;
-      localStorage.setItem('shwi_theme', next ? 'dark' : 'light');
-      return next;
-    });
-  };
+  // Synchronized theme state from useThemeStore
+  const isDarkTheme = useThemeStore((state) => state.isDarkTheme);
+  const handleToggleTheme = useThemeStore((state) => state.toggleTheme);
 
   // Mobile navigation drawer state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

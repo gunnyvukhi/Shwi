@@ -1,6 +1,7 @@
-import type { User } from './authService';
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/user`;
+
+import type { User } from '../types/user';
 
 export interface ActivityItem {
   time: string;
@@ -170,8 +171,27 @@ export interface FullDashboardData {
 }
 
 export const userService = {
+
+  async getMe(): Promise<User> {
+    const token = localStorage.getItem('shwi_auth_token');
+    const res = await fetch(`${API_BASE}/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const err: any = new Error(data.error || 'Failed to authenticate token');
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  },
+
   async getProfile(): Promise<User> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const res = await fetch(`${API_BASE}/profile`, {
       method: 'GET',
       headers: {
@@ -187,7 +207,7 @@ export const userService = {
   },
 
   async updateProfile(payload: Partial<User> & Record<string, any>): Promise<User> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const res = await fetch(`${API_BASE}/profile`, {
       method: 'PUT',
       headers: {
@@ -204,7 +224,7 @@ export const userService = {
   },
 
   async uploadMedia(file: File, type: 'avatar' | 'wallpaper'): Promise<{ url: string; user: User }> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', type);
@@ -227,7 +247,7 @@ export const userService = {
    * Gọi API /api/user/dashbroad để lấy toàn bộ dữ liệu người dùng
    */
   async getDashboardData(): Promise<FullDashboardData> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -246,7 +266,7 @@ export const userService = {
   },
 
   async getHeartRateLogs(): Promise<HeartRateItem[]> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -257,7 +277,7 @@ export const userService = {
   },
 
   async addHeartRateLog(payload: { bpm: number; recordedAt?: string }): Promise<HeartRateItem> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -272,7 +292,7 @@ export const userService = {
   },
 
   async addRestingHeartRateLog(payload: { bpm: number; recordedAt?: string }): Promise<HeartRateItem> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -287,7 +307,7 @@ export const userService = {
   },
 
   async getBodyConditionLogs(): Promise<BodyConditionItem[]> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -304,7 +324,7 @@ export const userService = {
     muscleMass?: number;
     date?: string;
   }): Promise<BodyConditionItem> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -319,7 +339,7 @@ export const userService = {
   },
 
   async deleteBodyConditionLog(logId: number): Promise<void> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -331,7 +351,7 @@ export const userService = {
   },
 
   async addMeal(payload: { mealName: string; calories: number; protein?: number; carbs?: number; fat?: number; datetimeEaten?: string }): Promise<MealItem> {
-    const token = localStorage.getItem('gym_auth_token');
+    const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 

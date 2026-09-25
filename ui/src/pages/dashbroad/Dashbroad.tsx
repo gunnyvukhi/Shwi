@@ -1,12 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import './Dashbroad.css';
 import {
-    Heart,
-    Moon,
     TrendingDown,
     TrendingUp,
-    Edit2,
-    X,
 } from 'lucide-react';
 import {
     LineChart,
@@ -22,306 +18,132 @@ import MobileNav from '../../components/layout/MobileNav';
 import theme, { getThemeStyles } from '../../config/theme';
 import FullBodyMuscles from '../../components/ui/FullBodyMuscles/FullBodyMuscles';
 import { useLanguage } from '../../context/LanguageContext';
-import MovementCard, { type GymWorkoutSession } from '../../components/ui/card/MovementCard';
-import StatCard from '../../components/ui/card/StatCard';
+import MovementCard from '../../components/ui/card/MovementCard';
+import SleepCard from '../../components/ui/card/SleepCard';
+import HeartRateCard from '../../components/ui/card/HeartRateCard';
 import NutritionMiniCard from '../../components/ui/card/NutritionMiniCard';
 import ActivityChart from '../../components/ui/chart/ActivityChart';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import {
-    userService,
     type WeightItem,
-    type ActivityItem,
-    type FullDashboardData
 } from '../../services/userService';
-import {
-    subscribeToHeartRate,
-    subscribeToRestingHeartRate,
-    type RealtimeHeartRateData
-} from '../../services/firebaseRealtime';
 
-const DASHBOARD_STORAGE_KEY = 'shwi_dashbroad_data';
-
-// Temp / Fallback Data
-const tempWeightDataMonth: WeightItem[] = [
-    { month: '01/26', weight: 70 }, { month: '02/26', weight: 70 }, { month: '03/26', weight: 70 },
-    { month: '04/26', weight: 70 }, { month: '05/26', weight: 70 }, { month: '06/26', weight: 70 },
-];
-
-function getStoredDashboard(): FullDashboardData | null {
-    try {
-        const raw = sessionStorage.getItem(DASHBOARD_STORAGE_KEY);
-        if (raw) {
-            return JSON.parse(raw);
-        }
-    } catch (e) {
-        console.warn('[Dashboard] Could not parse dashboard data from sessionStorage:', e);
-    }
-    return null;
-}
+import { updateUserField } from '../../types/user';
 
 export default function Dashboard() {
     const { t, language } = useLanguage();
-    const [goalModalOpen, setGoalModalOpen] = useState(false);
+    const user = useAuthStore((state: any) => state.user);
+    const updateUser = useAuthStore((state: any) => state.updateUser);
+    // const [goalModalOpen, setGoalModalOpen] = useState(false);
 
-    const [isDarkTheme, setIsDarkTheme] = useState(() => {
-        const saved = localStorage.getItem('shwi_theme');
-        return saved !== null ? saved === 'dark' : true;
-    });
+    const [dashbroadData, setDashbroadData] = useState(user);
 
-    // 1. Initialize states from sessionStorage cache if present (Instant zero-flicker render)
-    const initialStored = getStoredDashboard();
+    // Temp / Fallback Data
+    const currentDate = language === 'vi'
+        ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
+        : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    const [dashboardData, setDashboardData] = useState<FullDashboardData | null>(initialStored);
-    const [goalType, setGoalType] = useState<'Lose' | 'Gain'>(() => {
-        return initialStored?.profile?.fitnessGoal === 1 ? 'Gain' : 'Lose';
-    });
-    const [targetWeight, setTargetWeight] = useState<number>(() => {
-        return initialStored?.profile?.targetWeight ?? 70;
-    });
-    const [weightDataMonth, setWeightDataMonth] = useState<WeightItem[]>(() => {
-        if (initialStored?.weightHistory && initialStored.weightHistory.length > 0) {
-            return initialStored.weightHistory;
-        }
-        return tempWeightDataMonth;
-    });
-
-    // Real-time Heart Rate states directly from Firebase RTDB
-    const [realtimeHr, setRealtimeHr] = useState<RealtimeHeartRateData | null>(null);
-    const [realtimeRhr, setRealtimeRhr] = useState<RealtimeHeartRateData | null>(null);
-
-    // Subscribe to Real-time Heart Rate & Resting Heart Rate directly from Firebase RTDB
-    useEffect(() => {
-        const userId = dashboardData?.id || dashboardData?.profile?.id;
-        if (!userId) return;
-
-        const unsubscribeHr = subscribeToHeartRate(userId, (data) => {
-            if (data && data.bpm) {
-                setRealtimeHr(data);
-            }
-        });
-
-        const unsubscribeRhr = subscribeToRestingHeartRate(userId, (data) => {
-            if (data && data.bpm) {
-                setRealtimeRhr(data);
-            }
-        });
-
-        return () => {
-            unsubscribeHr();
-            unsubscribeRhr();
-        };
-    }, [dashboardData?.id, dashboardData?.profile?.id]);
-
-    // Sync all states when dashboardData changes
-    const applyDashboardData = useCallback((data: FullDashboardData) => {
-        setDashboardData(data);
-        if (data.profile) {
-            if (data.profile.targetWeight !== undefined && data.profile.targetWeight !== null) {
-                setTargetWeight(data.profile.targetWeight);
-            }
-            if (data.profile.fitnessGoal !== undefined && data.profile.fitnessGoal !== null) {
-                setGoalType(data.profile.fitnessGoal === 1 ? 'Gain' : 'Lose');
-            }
-        }
-        if (data.weightHistory && data.weightHistory.length > 0) {
-            setWeightDataMonth(data.weightHistory);
-        }
-    }, []);
-
-    // 2. Fetch fresh data from API /api/user/dashbroad on initial mount & page reloads
-    useEffect(() => {
-        let isMounted = true;
-
-        userService.getDashboardData()
-            .then(freshData => {
-                if (!isMounted) return;
-
-                // Save fresh response to sessionStorage
-                try {
-                    sessionStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(freshData));
-                } catch (e) {
-                    console.warn('[Dashboard] Could not save fresh data to sessionStorage:', e);
-                }
-
-                // Update UI states
-                applyDashboardData(freshData);
-            })
-            .catch(err => {
-                console.error('[Dashboard] Failed to fetch /api/user/dashbroad from API:', err);
-            });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [applyDashboardData]);
-
-    const handleToggleTheme = () => {
-        setIsDarkTheme((prev) => {
-            const next = !prev;
-            localStorage.setItem('shwi_theme', next ? 'dark' : 'light');
-            return next;
-        });
+    // Greeting helper
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour >= 5 && hour < 12) return t('dashboard.greetingMorning');
+        if (hour >= 12 && hour < 17) return t('dashboard.greetingAfternoon');
+        if (hour >= 17 && hour < 22) return t('dashboard.greetingEvening');
+        return t('dashboard.greetingNight');
     };
+    const greetingText = getGreeting();
+    const displayName = dashbroadData?.profile?.fullName?.split(' ').pop()
+        || dashbroadData?.name?.split(' ').pop()
+        || '';
+
+    // theme
+    const isDarkTheme = useThemeStore((state) => state.isDarkTheme);
+
+    const targetWeight = dashbroadData?.profile?.targetWeight ?? dashbroadData?.metrics?.weight ?? 70;
+    const currentWeight = dashbroadData?.metrics?.weight ?? 70;
+    // Circle progress: clamp between 0-100%
+    const weightCircleRadius = 45;
+    const weightCircleCircumference = 2 * Math.PI * weightCircleRadius;
+    const weightProgress = targetWeight > 0 ? Math.min(1, currentWeight / targetWeight) : 0;
+    const weightDashOffset = weightCircleCircumference * (1 - weightProgress);
+
+    const [weightDataMonth] = useState<WeightItem[]>(() => {
+        if (user?.weightHistory && user.weightHistory.length > 0) {
+            return user.weightHistory;
+        }
+        return [
+            { month: '--/--', weight: 70 }, { month: '--/--', weight: 70 }, { month: '--/--', weight: 70 },
+            { month: '--/--', weight: 70 }, { month: '--/--', weight: 70 }, { month: '--/--', weight: 70 },
+        ];
+    });
+
+
 
     // 3. Handle saving Target & Goal with Optimistic UI + SessionStorage + Silent Background PUT Request
-    const handleSaveGoal = async () => {
-        const newGoal = goalType === 'Lose' ? 0 : 1;
-        const newTarget = Number(targetWeight);
-
+    const handleSaveGoal = async (e: React.ChangeEvent<HTMLInputElement>) => {
         // A. Immediately update UI state and close modal (Zero delay)
-        setGoalModalOpen(false);
-
+        // setGoalModalOpen(false);
+        const updatedUser = updateUserField(dashbroadData, e.target.name, e.target.value)
+        setDashbroadData(updatedUser);
         // B. Immediately update sessionStorage
         try {
-            const stored = getStoredDashboard() || dashboardData;
-            if (stored) {
-                const updated: FullDashboardData = {
-                    ...stored,
-                    profile: {
-                        ...stored.profile,
-                        targetWeight: newTarget,
-                        fitnessGoal: newGoal
-                    }
-                };
-                sessionStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(updated));
-                setDashboardData(updated);
-            }
+            updateUser(updatedUser);
         } catch (e) {
             console.warn('[Dashboard] Error updating sessionStorage:', e);
         }
 
         // C. Send background PUT request to API ngầm (No page refresh)
-        try {
-            await userService.updateProfile({
-                targetWeight: newTarget,
-                fitnessGoal: newGoal
-            });
-            console.log('[Dashboard] Target updated in background successfully.');
-        } catch (err) {
-            console.error('[Dashboard Error] Failed to update target in background:', err);
-        }
+        // try {
+        //     await userService.updateProfile({
+        //         targetWeight: newTarget,
+        //         fitnessGoal: newGoal
+        //     });
+        //     console.log('[Dashboard] Target updated in background successfully.');
+        // } catch (err) {
+        //     console.error('[Dashboard Error] Failed to update target in background:', err);
+        // }
     };
-
-    const currentDate = language === 'vi'
-        ? new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }).replace('tháng', 'Tháng')
-        : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-    // Extract metrics & values from dashboardData
-    const currentWeight = dashboardData?.metrics?.weight ?? 70.0;
-    const stepsGoal = dashboardData?.profile?.targetSteps ?? 10000;
-    const stepsCurrent = dashboardData?.steps?.totalSteps ?? 0;
-
-    // Active calories: from steps or workout sessions
-    const activeCaloriesBurned = dashboardData?.steps?.totalSteps
-        ? Math.round(dashboardData.steps.totalSteps * 0.04)
-        : 640;
-
-    // Heart rate values (Prioritizing direct Real-time stream from Firebase RTDB)
-    const normalBpm = realtimeHr?.bpm ?? dashboardData?.heartRate?.bpm ?? 78;
-    const restingBpm = realtimeRhr?.bpm ?? dashboardData?.restingHeartRate?.bpm ?? 58;
-    const displayNormalBpm = `${normalBpm} bpm`;
-    const displayRestingBpm = `${restingBpm} bpm`;
-
-    // Sleep stats
-    const displaySleepValue = dashboardData?.sleep?.durationDisplay || '7 h 45 m';
-    const displaySleepQuality = dashboardData?.sleep?.sleepEfficiency
-        ? `${dashboardData.sleep.sleepEfficiency}%`
-        : '85%';
-
-    // Nutrition stats
-    const totalIn = dashboardData?.nutrition?.calories
-        ? Math.round(dashboardData.nutrition.calories)
-        : 0;
-
-    // Activity Day data mapped from step intervals
-    const activityDataDay: ActivityItem[] = dashboardData?.steps?.intervals && dashboardData.steps.intervals.length > 0
-        ? dashboardData.steps.intervals.map(i => ({
-            time: i.timeLabel,
-            cal: Math.round(i.steps * 0.04)
-        }))
-        : [
-            { time: '6AM', cal: 50 }, { time: '9AM', cal: 140 }, { time: '12PM', cal: 230 },
-            { time: '3PM', cal: 320 }, { time: '6PM', cal: 420 }, { time: '9PM', cal: 490 }
-        ];
-
-    // Gym workout week sessions mapped from workoutLogs
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const gymWorkoutData: GymWorkoutSession[] = dayNames.map(day => {
-        const fullDayName = {
-            'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
-            'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
-        }[day] || day;
-        const entry = dashboardData?.workoutLogs ? dashboardData.workoutLogs[fullDayName] : undefined;
-        return {
-            day,
-            mins: entry ? 60 : 0,
-            active: Boolean(entry)
-        };
-    });
-
+    handleSaveGoal;
     return (
         <div
             className={`app-wrapper dashboard-app-wrapper ${isDarkTheme ? 'theme-dark' : 'theme-light'}`}
             style={getThemeStyles(isDarkTheme)}
         >
-            <Header isDarkTheme={isDarkTheme} onToggleTheme={handleToggleTheme} />
+            <Header />
 
             {/* Main Content */}
             <main>
                 <div className="page-header">
-                    <div>
-                        <h1 className="page-title">{t('dashboard.overview')}</h1>
-                        <p className="page-date">
-                            {currentDate}
-                        </p>
+                    {/* Left: Greeting */}
+                    <div className="greeting-banner">
+                        <h1 className="greeting-heading">
+                            {greetingText}{displayName ? `, ${displayName}` : ''}!
+                        </h1>
                     </div>
+
+                    {/* Right: Date */}
+                    <p className="page-date page-date--right">{currentDate}</p>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="dashboard-stats-grid">
                     {/* Movement card — 3/5 width */}
                     <div className="stats-grid-movement">
-                        <MovementCard
-                            stepsGoal={stepsGoal}
-                            stepsCurrent={stepsCurrent}
-                            caloriesBurned={activeCaloriesBurned}
-                            gymWorkoutData={gymWorkoutData}
-                        />
+                        <MovementCard />
                     </div>
                     {/* Right stacked — 2/5 width */}
                     <div className="stats-grid-side">
-                        <StatCard
-                            icon={<Heart size={20} />}
-                            label={
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                    {t('dashboard.heartRate') || 'Heart Rate'}
-                                    {realtimeHr && (
-                                        <span
-                                            style={{
-                                                display: 'inline-block',
-                                                width: '7px',
-                                                height: '7px',
-                                                borderRadius: '50%',
-                                                backgroundColor: '#10b981',
-                                                boxShadow: '0 0 6px #10b981'
-                                            }}
-                                            title="Live Realtime"
-                                        />
-                                    )}
-                                </span>
-                            }
-                            value={displayNormalBpm}
-                            subValue={t('dashboard.resting', { val: displayRestingBpm }) || `Resting: ${displayRestingBpm}`}
-                            badgeColorClass="badge-rose"
-                        />
-                        <StatCard
-                            icon={<Moon size={20} />}
-                            label={t('dashboard.sleep') || 'Sleep'}
-                            value={displaySleepValue}
-                            subValue={t('dashboard.sleepQuality', { val: displaySleepQuality }) || `Quality: ${displaySleepQuality}`}
-                            badgeColorClass="badge-indigo"
-                        />
-                        <NutritionMiniCard caloriesIn={totalIn} />
+                        <HeartRateCard UserID={user?.id} />
+                        <SleepCard sleep={user?.sleep} />
+                        <NutritionMiniCard nutrition={user?.nutrition} />
                     </div>
+                </div>
+
+                {/* Section Divider */}
+                <div className="section-divider" aria-hidden="true">
+                    <span className="section-divider-label">{t('dashboard.chartsSection')}</span>
+                    <span className="section-divider-line" />
                 </div>
 
                 {/* Charts & Body Layout */}
@@ -329,7 +151,7 @@ export default function Dashboard() {
                     <div className="charts-col">
 
                         {/* Activity Chart */}
-                        <ActivityChart activityDataDay={activityDataDay} />
+                        <ActivityChart />
 
                         {/* Weight Progress (with Line Chart and Circle) */}
                         <div className="card-panel">
@@ -338,14 +160,13 @@ export default function Dashboard() {
                                     <h2 className="card-title">
                                         {t('dashboard.weightProgressTitle')} <span className="text-primary">{t('dashboard.weightProgressHighlight')}</span>
                                     </h2>
-                                    <div className="goal-status" style={{ color: goalType === 'Lose' ? theme.accents.emerald : 'var(--primary)' }}>
-                                        {goalType === 'Lose' ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
-                                        <span>{t('dashboard.goalWeight', { val: targetWeight })}</span>
+                                    <div className="goal-status" style={{ color: currentWeight <= targetWeight ? '#10b981' : 'var(--primary)' }}>
+                                        {currentWeight <= targetWeight
+                                            ? <TrendingDown size={15} aria-hidden="true" />
+                                            : <TrendingUp size={15} aria-hidden="true" />}
+                                        <span>{t('dashboard.targetWeight')}: {targetWeight} kg</span>
                                     </div>
                                 </div>
-                                <button className="btn-secondary" onClick={() => setGoalModalOpen(true)}>
-                                    <Edit2 size={14} /> {t('dashboard.adjustGoal')}
-                                </button>
                             </div>
 
                             <div className="weight-layout">
@@ -363,10 +184,15 @@ export default function Dashboard() {
                                 </div>
 
                                 {/* Circle Chart */}
-                                <div className="circle-widget">
+                                <div className="circle-widget" aria-label={`${currentWeight} kg`}>
                                     <svg viewBox="0 0 100 100" className="circle-svg">
                                         <circle cx="50" cy="50" r="45" className="circle-bg" />
-                                        <circle cx="50" cy="50" r="45" className="circle-progress" />
+                                        <circle
+                                            cx="50" cy="50" r="45"
+                                            className="circle-progress"
+                                            strokeDasharray={weightCircleCircumference}
+                                            strokeDashoffset={weightDashOffset}
+                                        />
                                     </svg>
                                     <div className="circle-content">
                                         <span className="circle-val">{currentWeight}</span>
@@ -391,7 +217,7 @@ export default function Dashboard() {
             </main>
 
             {/* Goal Modal */}
-            {goalModalOpen && (
+            {/* {goalModalOpen && (
                 <div className="modal-backdrop">
                     <div className="modal-content">
                         <button className="modal-close" onClick={() => setGoalModalOpen(false)}><X size={20} /></button>
@@ -403,14 +229,14 @@ export default function Dashboard() {
                             <label className="form-label">{t('dashboard.goalType')}</label>
                             <div className="goal-toggle-grid">
                                 <button
-                                    className={`goal-toggle-btn ${goalType === 'Lose' ? 'active-lose' : ''}`}
-                                    onClick={() => setGoalType('Lose')}
+                                    className={`goal-toggle-btn ${targetWeight[1] === 1 ? 'active-lose' : ''}`}
+                                    onClick={() => setTargetWeight([targetWeight[0], 1])}
                                 >
                                     {t('dashboard.loseWeight')}
                                 </button>
                                 <button
-                                    className={`goal-toggle-btn ${goalType === 'Gain' ? 'active-gain' : ''}`}
-                                    onClick={() => setGoalType('Gain')}
+                                    className={`goal-toggle-btn ${targetWeight[1] === 0 ? 'active-gain' : ''}`}
+                                    onClick={() => setTargetWeight([targetWeight[0], 0])}
                                 >
                                     {t('dashboard.gainWeight')}
                                 </button>
@@ -422,8 +248,8 @@ export default function Dashboard() {
                             <input
                                 type="number"
                                 className="form-input"
-                                value={targetWeight}
-                                onChange={(e) => setTargetWeight(Number(e.target.value))}
+                                value={targetWeight[0]}
+                                onChange={(e) => setTargetWeight([Number(e.target.value), targetWeight[1]])}
                             />
                         </div>
 
@@ -432,7 +258,7 @@ export default function Dashboard() {
                         </button>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* Mobile Bottom Nav */}
             <MobileNav activeNav="dashboard" />

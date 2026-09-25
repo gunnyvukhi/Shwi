@@ -88,7 +88,7 @@ def verify_email_otp():
         return jsonify({
             'message': 'Email is already verified',
             'token': token,
-            'user': user.to_dict()
+            'user': user.get_full_data()
         }), 200
 
     if not user.otp_code or user.otp_purpose != 'email_verification':
@@ -115,7 +115,7 @@ def verify_email_otp():
     return jsonify({
         'message': 'Email verified successfully! Welcome to Shwi Gym.',
         'token': token,
-        'user': user.to_dict()
+        'user': user.get_full_data()
     }), 200
 
 
@@ -179,7 +179,7 @@ def login():
     return jsonify({
         'message': 'Login successful',
         'token': token,
-        'user': user.to_dict()
+        'user': user.get_full_data()
     }), 200
 
 
@@ -265,7 +265,7 @@ def reset_password_otp():
     return jsonify({
         'message': 'Password reset successfully!',
         'token': token,
-        'user': user.to_dict()
+        'user': user.get_full_data()
     }), 200
 
 
@@ -338,7 +338,7 @@ def google_auth():
     return jsonify({
         'message': 'Google authentication successful',
         'token': token,
-        'user': user.to_dict()
+        'user': user.get_full_data()
     }), 200
 
 
@@ -408,13 +408,5 @@ def apple_auth():
     return jsonify({
         'message': 'Apple authentication successful',
         'token': token,
-        'user': user.to_dict()
-    }), 200
-
-
-@auth_bp.route('/me', methods=['GET'])
-@token_required
-def get_me(current_user):
-    return jsonify({
-        'user': current_user.to_dict()
+        'user': user.get_full_data()
     }), 200

@@ -8,9 +8,10 @@ import { LanguageProvider } from './context/LanguageContext';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'dummy_client_id';
 
 function App() {
-  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const checkAuth = useAuthStore((state: any) => state.checkAuth);
 
   useEffect(() => {
+    console.log('app render');
     checkAuth();
   }, [checkAuth]);
 
