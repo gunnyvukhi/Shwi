@@ -244,85 +244,16 @@ export const userService = {
   },
 
   /**
-   * Gọi API /api/user/dashbroad để lấy toàn bộ dữ liệu người dùng
+   * Gọi API 
    */
-  async getDashboardData(): Promise<FullDashboardData> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    const res = await fetch(`${API_BASE}/dashbroad`, {
-      method: 'GET',
-      headers,
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to fetch dashboard data');
-    }
-    return data;
-  },
 
-  async getHeartRateLogs(): Promise<HeartRateItem[]> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_BASE}/heart-rate`, { method: 'GET', headers });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to fetch heart rate logs');
-    return data.heartRateLogs || [];
-  },
-
-  async addHeartRateLog(payload: { bpm: number; recordedAt?: string }): Promise<HeartRateItem> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_BASE}/heart-rate`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to log heart rate');
-    return data.log;
-  },
-
-  async addRestingHeartRateLog(payload: { bpm: number; recordedAt?: string }): Promise<HeartRateItem> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_BASE}/resting-heart-rate`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to log resting heart rate');
-    return data.log;
-  },
-
-  async getBodyConditionLogs(): Promise<BodyConditionItem[]> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_BASE}/body-condition`, { method: 'GET', headers });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to fetch body condition logs');
-    return data.bodyConditionLogs || [];
-  },
-
-  async addBodyConditionLog(payload: {
-    weight: number;
+  async updateBodyCondition(payload: {
+    weight?: number;
     height?: number;
     bodyFat?: number;
     muscleMass?: number;
     date?: string;
+    targetWeight?: number;
   }): Promise<BodyConditionItem> {
     const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -335,33 +266,25 @@ export const userService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to log body condition');
-    return data.log;
+    return data.bodyCondition;
   },
 
-  async deleteBodyConditionLog(logId: number): Promise<void> {
-    const token = localStorage.getItem('shwi_auth_token');
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_BASE}/body-condition/${logId}`, { method: 'DELETE', headers });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Failed to delete body condition log');
-    }
-  },
-
-  async addMeal(payload: { mealName: string; calories: number; protein?: number; carbs?: number; fat?: number; datetimeEaten?: string }): Promise<MealItem> {
+  async updateTarget(payload: {
+    targetWeight?: number;
+    targetSteps?: number;
+    fitnessGoal?: number;
+  }): Promise<string> {
     const token = localStorage.getItem('shwi_auth_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_BASE}/meals`, {
-      method: 'POST',
+    const res = await fetch(`${API_BASE}/profile/target`, {
+      method: 'PUT',
       headers,
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to log meal');
-    return data.log;
+    if (!res.ok) throw new Error(data.error || 'Failed to update target');
+    return data.message;
   }
 };

@@ -1,78 +1,79 @@
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from models import db, BodyConditionLog
 from utils import token_required
 
 body_bp = Blueprint('body', __name__)
 
+@body_bp.route('/weight-history', methods=['GET'])
+@token_required
+def get_weight_history(current_user):
+    return jsonify({
+        'weightHistory': current_user.get_monthly_weight_history()
+    }), 200
+
 @body_bp.route('/body-condition', methods=['GET', 'POST'])
 @token_required
-def handle_body_condition(current_user):
+def get_body_condition(current_user):
     if request.method == 'POST':
-        data = request.get_json() or {}
-        raw_weight = data.get('weight')
-        if raw_weight is None:
-            return jsonify({'error': 'weight is required'}), 400
+        data = request.get_json(silent=True) or {}
 
-        try:
-            w_val = float(raw_weight)
-            if w_val <= 0:
-                return jsonify({'error': 'weight must be greater than 0'}), 400
-        except (ValueError, TypeError):
-            return jsonify({'error': 'Invalid weight value'}), 400
+        # Lấy bản ghi body condition gần nhất của user
+        latest_log = current_user.latest_body_condition
 
-        latest = current_user.latest_body_condition
-        raw_height = data.get('height')
-        h_val = None
-        if raw_height is not None:
-            try:
-                h_val = float(raw_height)
-            except (ValueError, TypeError):
-                pass
-        if h_val is None:
-            h_val = latest.get('height', 175.0) if latest else 175.0
+        # Lấy dữ liệu từ data (hỗ trợ cả snake_case và camelCase), nếu thiếu thì lấy từ bản ghi gần nhất
+        weight = data.get('weight')
+        if weight is None and latest_log:
+            weight = latest_log.get("weight")
 
-        bf_val = None
-        if data.get('bodyFat') is not None:
-            try:
-                bf_val = float(data['bodyFat'])
-            except (ValueError, TypeError):
-                pass
+        height = data.get('height')
+        if height is None and latest_log:
+            height = latest_log.get("height")
 
-        mm_val = None
-        if data.get('muscleMass') is not None:
-            try:
-                mm_val = float(data['muscleMass'])
-            except (ValueError, TypeError):
-                pass
+        body_fat = data.get('body_fat') if 'body_fat' in data else data.get('bodyFat')
+        if body_fat is None and latest_log:
+            body_fat = latest_log.get("bodyFat")
 
-        log = BodyConditionLog(
+        muscle_mass = data.get('muscle_mass') if 'muscle_mass' in data else data.get('muscleMass')
+        if muscle_mass is None and latest_log:
+            muscle_mass = latest_log.get("muscleMass")
+
+        bmi = data.get('bmi')
+        if bmi is None and latest_log and not height:
+            bmi = latest_log.get("bmi")
+
+        body_fat = data.get('body_fat') if 'body_fat' in data else data.get('bodyFat')
+        if body_fat is None and latest_log:
+            body_fat = latest_log.get("bodyFat")
+
+        muscle_mass = data.get('muscle_mass') if 'muscle_mass' in data else data.get('muscleMass')
+        if muscle_mass is None and latest_log:
+            muscle_mass = latest_log.get("muscleMass")
+
+        date = data.get('date')
+        if date is None:
+            date = datetime.now(timezone.utc).date()
+
+        new_log = BodyConditionLog(
             user_id=current_user.id,
-            weight=w_val,
-            height=h_val,
-            body_fat=bf_val,
-            muscle_mass=mm_val,
-            date=data.get('date')
+            weight=weight if weight is not None else 0.0,
+            height=height,
+            body_fat=body_fat,
+            muscle_mass=muscle_mass,
+            bmi=bmi,
+            date=date
         )
-        db.session.add(log)
+
+        db.session.add(new_log)
         db.session.commit()
 
         return jsonify({
-            'message': 'Body condition logged successfully',
-            'log': log.to_dict()
-        }), 201
-
-    limit = request.args.get('limit', 30, type=int)
-    logs = BodyConditionLog.query.filter_by(user_id=current_user.id).order_by(
-        BodyConditionLog.date.desc(),
-        BodyConditionLog.created_at.desc(),
-        BodyConditionLog.id.desc()
-    ).limit(limit).all()
+            'bodyCondition': new_log.to_dict(),
+        }), 200
 
     return jsonify({
-        'bodyConditionLogs': [item.to_dict() for item in logs],
-        'monthlyWeightHistory': current_user.get_monthly_weight_history()
+        'bodyCondition': current_user.latest_body_condition,
     }), 200
-
 
 @body_bp.route('/body-condition/<int:log_id>', methods=['DELETE'])
 @token_required

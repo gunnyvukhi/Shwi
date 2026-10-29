@@ -8,6 +8,38 @@ from utils import token_required
 
 profile_bp = Blueprint('profile', __name__)
 
+@profile_bp.route('/profile/target', methods=['PUT'])
+@token_required
+def update_target(current_user):
+    data = request.get_json() or {}
+    info = current_user.get_info()
+
+    target_weight = data.get('target_weight') if 'target_weight' in data else data.get('targetWeight')
+    if target_weight is not None :
+        info.target_weight = target_weight
+
+    target_steps = data.get('target_steps') if 'target_steps' in data else data.get('targetSteps')
+    if target_steps is not None :
+        info.target_steps = target_steps
+
+    fitness_goal = data.get('fitness_goal') if 'fitness_goal' in data else data.get('fitnessGoal')
+    if fitness_goal is not None:
+        if str(fitness_goal).lower() in ['lose', '0', 'lose_weight', 'loss']:
+            info.fitness_goal = 0
+        elif str(fitness_goal).lower() in ['gain', '1', 'gain_weight']:
+            info.fitness_goal = 1
+        else:
+            try:
+                info.fitness_goal = int(fitness_goal)
+            except (ValueError, TypeError):
+                pass
+    
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Target updated successfully',
+    }), 200
+
 def upload_to_cloudinary(file_bytes, filename, cloud_name, api_key, api_secret, preset=""):
     """
     Upload file bytes to Cloudinary and return the HTTPS cloud image URL.

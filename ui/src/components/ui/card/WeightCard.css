@@ -1,0 +1,817 @@
+/*
+ * WeightCard.css
+ * Styles specific to the WeightCard component.
+ * Shared base classes (card-panel, card-header, card-title, btn-secondary,
+ * btn-primary, goal-status, modal-*, form-*) live in Dashbroad.css and
+ * are available globally via the app stylesheet.
+ */
+
+/* ── Layout & Header Positioning ────────────────────────────── */
+
+.wc-card-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.wc-update-trigger-btn {
+    align-self: flex-start;
+    margin-top: 0.15rem; /* Hơi đưa lên gần góc trên trên PC */
+    flex-shrink: 0;
+}
+
+.weight-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .weight-layout {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .wc-update-trigger-btn {
+        margin-top: 0.05rem;
+    }
+}
+
+/* ── Mobile View Adjustments ────────────────────────────────── */
+
+@media (max-width: 767px) {
+    .circle-widget {
+        display: none !important; /* Ẩn chart tròn trên mobile */
+    }
+
+    .weight-layout {
+        gap: 0;
+    }
+
+    .weight-chart-wrapper {
+        height: 13rem;
+        min-height: 13rem;
+    }
+
+    .wc-card-header {
+        margin-bottom: 1rem;
+    }
+
+    .wc-card-header .card-title {
+        font-size: 1.2rem;
+    }
+
+    .wc-card-header .goal-status {
+        font-size: 0.8rem;
+    }
+
+    .wc-update-trigger-btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.72rem;
+    }
+}
+
+/* ── Line Chart Wrapper ──────────────────────────────────────── */
+
+.weight-chart-wrapper {
+    flex: 1;
+    height: 14rem;
+    min-height: 14rem;
+    width: 100%;
+}
+
+/* ── Circle Widget ───────────────────────────────────────────── */
+
+.circle-widget {
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.circle-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.circle-bg {
+    fill: none;
+    stroke: var(--svg-stroke);
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.circle-progress {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-out;
+    filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.circle-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.circle-unit {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+}
+
+/* ============================================================
+   WeightCard Simplified Modern Modal (wc-* namespace)
+   ============================================================ */
+
+/* ── Backdrop ─────────────────────────────────────────────── */
+.wc-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(0, 0, 0, 0.65);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: wc-backdrop-in 0.2s ease both;
+    overflow-y: auto;
+}
+
+@keyframes wc-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Modal Shell ──────────────────────────────────────────── */
+.wc-modal {
+    width: 100%;
+    max-width: 26.5rem;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow:
+        0 24px 60px -12px rgba(0, 0, 0, 0.55),
+        0 0 0 1px var(--accent-glow);
+    position: relative;
+    animation: wc-modal-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Ensure all modal typography uniformly uses project font stack */
+.wc-modal,
+.wc-modal input,
+.wc-modal button,
+.wc-modal select,
+.wc-modal textarea {
+    font-family: 'Barlow', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@keyframes wc-modal-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.wc-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.wc-modal-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.wc-modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.wc-modal-subtitle {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.wc-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 0.45rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-main);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.wc-modal-close:hover {
+    background: var(--border-color);
+    color: var(--text-main);
+    border-color: var(--primary);
+}
+
+/* ── Body ─────────────────────────────────────────────────── */
+.wc-modal-body {
+    padding: 1rem 1.25rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+/* ── Section Block ────────────────────────────────────────── */
+.wc-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.wc-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wc-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.wc-section-title svg {
+    color: var(--primary);
+}
+
+/* ── Saved indicator ──────────────────────────────────────── */
+.wc-saved-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #10b981;
+    animation: wc-pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes wc-pop-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Table Layout (2x2 Grid) ──────────────────────────────── */
+.wc-table-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 0.75rem;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+}
+
+.wc-table-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.wc-table-divider {
+    height: 1px;
+    background: var(--border-color);
+    opacity: 0.5;
+    margin: 0.08rem 0;
+}
+
+.wc-field-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+    width: 100%;
+}
+
+.wc-field-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* ── Input Wrapper with Unit ──────────────────────────────── */
+.wc-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+}
+
+.wc-input {
+    width: 100%;
+    height: 2.35rem;
+    padding: 0 1.85rem 0 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-solid);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.wc-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.wc-input--error {
+    border-color: #f43f5e !important;
+    box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.15) !important;
+}
+
+.wc-unit {
+    position: absolute;
+    right: 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    pointer-events: none;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wc-unit--icon {
+    color: var(--text-muted);
+    opacity: 0.8;
+    transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.wc-input-wrap:hover .wc-unit--icon {
+    opacity: 1;
+    color: var(--text-main);
+}
+
+/* ── Date Input with Edge Icon ───────────────────────────── */
+.wc-input-wrap--date {
+    cursor: pointer;
+}
+
+.wc-input--date {
+    padding: 0 2rem 0 0.65rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color-scheme: dark;
+    display: flex;
+    align-items: center;
+    line-height: normal;
+    cursor: pointer;
+}
+
+.theme-light .wc-input--date {
+    color-scheme: light;
+}
+
+.wc-input--date::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+    line-height: normal;
+}
+
+/* Make native picker indicator transparent & cover the right edge so clicking calendar icon directly opens native picker */
+.wc-input--date::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 2.2rem;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+/* ── Custom Goal Dropdown ─────────────────────────────────── */
+.wc-input-wrap--dropdown {
+    position: relative;
+}
+
+.wc-select-trigger {
+    width: 100%;
+    height: 2.35rem;
+    padding: 0 1.85rem 0 0.65rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card-solid);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.15s ease;
+    box-sizing: border-box;
+    min-width: 0;
+    position: relative;
+}
+
+.wc-select-trigger:hover {
+    border-color: #64748b;
+}
+
+.wc-select-trigger:focus,
+.wc-select-trigger--open {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.wc-select-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wc-goal-icon {
+    flex-shrink: 0;
+}
+
+.wc-goal-icon--lose {
+    color: #818cf8;
+}
+
+.wc-goal-icon--gain {
+    color: #10b981;
+}
+
+.wc-dropdown-chevron {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text-muted);
+}
+
+.wc-dropdown-chevron--open {
+    transform: rotate(180deg);
+    color: var(--primary);
+}
+
+/* ── Floating Dropdown Menu ── */
+.wc-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 65;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    box-shadow:
+        0 16px 36px -6px rgba(0, 0, 0, 0.55),
+        0 0 0 1px var(--accent-glow);
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    animation: wc-dropdown-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+@keyframes wc-dropdown-in {
+    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.wc-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.55rem;
+    border-radius: 0.4rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.12s ease;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.wc-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.theme-light .wc-dropdown-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.wc-dropdown-item--active {
+    background: rgba(99, 102, 241, 0.12) !important;
+}
+
+.wc-dropdown-item-left {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.wc-goal-badge {
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wc-goal-badge--lose {
+    background: rgba(99, 102, 241, 0.16);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.wc-goal-badge--gain {
+    background: rgba(16, 185, 129, 0.16);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.wc-dropdown-item-text {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.wc-dropdown-check {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+/* ── Field Error ──────────────────────────────────────────── */
+.wc-field-error {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #f43f5e;
+    line-height: 1.2;
+}
+
+/* ── Goal Chip ────────────────────────────────────────────── */
+.wc-goal-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.5rem;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.wc-goal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.wc-goal-dot--up   { background: #10b981; }
+.wc-goal-dot--down { background: #6366f1; }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.wc-btn {
+    width: 100%;
+    height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    margin-top: 0.1rem;
+}
+
+.wc-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.wc-btn--primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.wc-btn--primary:not(:disabled):hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.wc-btn--primary:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.wc-btn--secondary {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.theme-dark .wc-btn--secondary {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+.wc-btn--secondary:not(:disabled):hover {
+    background: rgba(16, 185, 129, 0.25);
+    transform: translateY(-1px);
+}
+
+.wc-btn--secondary:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.wc-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.25rem 0;
+}
+
+/* ── Spin ─────────────────────────────────────────────────── */
+.wc-spin {
+    animation: wc-rotate 0.75s linear infinite;
+}
+
+@keyframes wc-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ── Tablet & Mobile Modal Responsiveness (Under 640px) ───── */
+@media (max-width: 639px) {
+    .wc-modal-backdrop {
+        padding: 0.75rem;
+    }
+
+    .wc-modal {
+        max-width: min(100%, 22.5rem);
+        border-radius: 0.875rem;
+    }
+
+    .wc-modal-header {
+        padding: 0.8rem 1rem 0.7rem;
+    }
+
+    .wc-modal-title {
+        font-size: 0.95rem;
+    }
+
+    .wc-modal-subtitle {
+        font-size: 0.74rem;
+    }
+
+    .wc-modal-close {
+        width: 1.7rem;
+        height: 1.7rem;
+    }
+
+    .wc-modal-body {
+        padding: 0.8rem 1rem 0.95rem;
+        gap: 0.7rem;
+    }
+
+    .wc-table-card {
+        padding: 0.65rem 0.75rem;
+        gap: 0.45rem;
+        border-radius: 0.65rem;
+    }
+
+    .wc-table-row {
+        gap: 0.5rem;
+    }
+
+    .wc-field-label {
+        font-size: 0.7rem;
+    }
+
+    .wc-input,
+    .wc-select-trigger,
+    .shwi-datepicker-trigger {
+        height: 2.15rem;
+        font-size: 0.84rem;
+        padding-left: 0.6rem;
+    }
+
+    .wc-select-value {
+        font-size: 0.8rem;
+    }
+
+    .wc-unit {
+        right: 0.55rem;
+        font-size: 0.74rem;
+    }
+
+    .wc-btn {
+        height: 2.2rem;
+        font-size: 0.825rem;
+    }
+}
+
+/* ── Small Mobile Screens (Under 380px) ─────────────────────── */
+@media (max-width: 380px) {
+    .wc-modal-backdrop {
+        padding: 0.4rem;
+    }
+
+    .wc-modal {
+        max-width: 100%;
+        border-radius: 0.75rem;
+    }
+
+    .wc-table-card {
+        padding: 0.5rem 0.55rem;
+    }
+
+    .wc-table-row {
+        gap: 0.4rem;
+    }
+
+    .wc-input,
+    .wc-select-trigger,
+    .shwi-datepicker-trigger {
+        font-size: 0.76rem;
+    }
+
+    .wc-select-value {
+        font-size: 0.76rem;
+    }
+}
+
